@@ -38,11 +38,15 @@ func (root *Tree) insert(splitPath []string, route *Route, method string) bool {
 
 func (root *Tree) find(splitPath []string, method string) (*Route, int) {
 	if len(splitPath) == 0 {
+		if len(root.routes) == 0 {
+			return nil, http.StatusNotFound
+		}
+
 		route, ok := root.routes[method]
 		if ok {
 			return route, http.StatusOK
 		}
-        return nil, http.StatusMethodNotAllowed
+		return nil, http.StatusMethodNotAllowed
 	}
 
 	child, ok := root.children[splitPath[0]]

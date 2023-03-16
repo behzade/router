@@ -14,13 +14,13 @@ type Router struct {
 
 func New() *Router {
 	return &Router{
-        NotFoundHandler: http.HandlerFunc(NotFoundHandlerFunc),
-        MethodNotAllowedHandler: http.HandlerFunc(MethodNotAllowedHandlerFunc),
-		routes: &Tree{make(map[string]*Tree), make(map[string]*Route)},
+		NotFoundHandler:         http.HandlerFunc(NotFoundHandlerFunc),
+		MethodNotAllowedHandler: http.HandlerFunc(MethodNotAllowedHandlerFunc),
+		routes:                  &Tree{make(map[string]*Tree), make(map[string]*Route)},
 	}
 }
 
-func (r *Router) AddRoute(path string, name *string, method string, handler http.Handler) {
+func (r *Router) AddRoute(path string, method string, handler http.Handler) {
 	splitPath := SplitPath(path)
 
 	r.routes.insert(splitPath, &Route{handler}, method)
@@ -46,7 +46,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler, statusCode := r.resolve(req.URL.Path, req.Method)
 	if statusCode != http.StatusOK {
 		handler.ServeHTTP(w, req)
-        return
+		return
 	}
 
 	for _, middleware := range r.middlewares {

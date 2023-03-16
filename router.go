@@ -20,10 +20,34 @@ func New() *Router {
 	}
 }
 
-func (r *Router) AddRoute(path string, method string, handler http.Handler) {
+func (r *Router) addRoute(method string, path string, handler http.Handler) {
 	splitPath := SplitPath(path)
 
 	r.routes.insert(splitPath, &Route{handler}, method)
+}
+
+func (r *Router) GET(path string, handler http.Handler) {
+	r.addRoute(http.MethodGet, path, handler)
+}
+
+func (r *Router) POST(path string, handler http.Handler) {
+	r.addRoute(http.MethodPost, path, handler)
+}
+
+func (r *Router) PUT(path string, handler http.Handler) {
+	r.addRoute(http.MethodPut, path, handler)
+}
+
+func (r *Router) PATCH(path string, handler http.Handler) {
+	r.addRoute(http.MethodPatch, path, handler)
+}
+
+func (r *Router) DELETE(path string, handler http.Handler) {
+	r.addRoute(http.MethodDelete, path, handler)
+}
+
+func (r *Router) HEAD(path string, handler http.Handler) {
+	r.addRoute(http.MethodHead, path, handler)
 }
 
 func (r *Router) resolve(path string, method string) (http.Handler, int) {

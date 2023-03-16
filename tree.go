@@ -45,7 +45,7 @@ func (t *Tree) insert(pathParts []PathPart, route http.Handler, method string) b
 }
 
 func (t *Tree) find(pathParts []string, method string) (http.Handler, map[string]string, int) {
-    defaultStatus := http.StatusNotFound
+	defaultStatus := http.StatusNotFound
 	if len(pathParts) == 0 {
 		if len(t.handlers) == 0 {
 			return nil, nil, http.StatusNotFound
@@ -72,9 +72,9 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, map[string
 			return handler, pathParams, status
 		}
 
-        if status == http.StatusMethodNotAllowed {
-            defaultStatus = http.StatusMethodNotAllowed
-        }
+		if status == http.StatusMethodNotAllowed {
+			defaultStatus = http.StatusMethodNotAllowed
+		}
 	}
 
 	return nil, nil, defaultStatus

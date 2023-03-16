@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"sort"
 )
@@ -11,7 +10,7 @@ type Router struct {
 	MethodNotAllowedHandler http.Handler
 
 	handlers         *Tree
-	middlewares      []Middleware
+	middlewares      []Middleware // global middlewares
 	middlewareScores []int
 }
 
@@ -21,35 +20,37 @@ func New() *Router {
 	}
 }
 
-func (r *Router) resolve(path string, method string) (http.Handler, int) {
+func (r *Router) resolve(path string, method string) (http.Handler, map[string]string, int) {
 	route, pathParams, statusCode := r.handlers.find(split(path), method)
-    fmt.Printf("pathParams: %v\n", pathParams)
 
 	switch statusCode {
 	case http.StatusOK:
-		return route, statusCode
+		return route, pathParams, statusCode
 	case http.StatusNotFound:
-		return r.NotFoundHandler, statusCode
+		return r.NotFoundHandler, nil, statusCode
 	case http.StatusMethodNotAllowed:
-		return r.MethodNotAllowedHandler, statusCode
+		return r.MethodNotAllowedHandler, nil, statusCode
 	}
 
-	return r.NotFoundHandler, http.StatusNotFound
+	return r.NotFoundHandler, nil, http.StatusNotFound
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, statusCode := r.resolve(req.URL.Path, req.Method)
+	handler, _, statusCode := r.resolve(req.URL.Path, req.Method)
+
 	if statusCode != http.StatusOK {
-		w.WriteHeader(statusCode)
 		if handler != nil {
 			handler.ServeHTTP(w, req)
+            return
 		}
+		w.WriteHeader(statusCode)
 		return
 	}
 
 	for _, middleware := range r.middlewares {
 		handler = middleware.Pipe(handler)
 	}
+
 	handler.ServeHTTP(w, req)
 }
 

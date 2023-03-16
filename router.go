@@ -23,7 +23,7 @@ func New() *Router {
 }
 
 func (r *Router) resolve(path string, method string) (http.Handler, int) {
-	splitPath := SplitPath(path)
+	splitPath := splitPath(path)
 	route, statusCode := r.handlers.find(splitPath, method)
 
 	switch statusCode {
@@ -52,7 +52,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {
-	splitPath := SplitPath(path)
+	splitPath := splitPath(path)
 
 	r.handlers.insert(splitPath, handler, method)
 }

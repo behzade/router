@@ -2,28 +2,59 @@ package router
 
 import (
 	"net/http"
+	"sort"
 )
 
 type Router struct {
 	NotFoundHandler         http.Handler
 	MethodNotAllowedHandler http.Handler
 
-	routes      *Tree
-	middlewares []Middleware
+	handlers         *Tree
+	middlewares      []Middleware
+	middlewareScores []int
 }
 
 func New() *Router {
 	return &Router{
 		NotFoundHandler:         http.HandlerFunc(NotFoundHandlerFunc),
 		MethodNotAllowedHandler: http.HandlerFunc(MethodNotAllowedHandlerFunc),
-		routes:                  &Tree{make(map[string]*Tree), make(map[string]*Route)},
+		handlers:                &Tree{make(map[string]*Tree), make(map[string]http.Handler)},
 	}
+}
+
+func (r *Router) resolve(path string, method string) (http.Handler, int) {
+	splitPath := SplitPath(path)
+	route, statusCode := r.handlers.find(splitPath, method)
+
+	switch statusCode {
+	case http.StatusOK:
+		return route, statusCode
+	case http.StatusNotFound:
+		return r.NotFoundHandler, statusCode
+	case http.StatusMethodNotAllowed:
+		return r.MethodNotAllowedHandler, statusCode
+	}
+
+	return r.NotFoundHandler, http.StatusNotFound
+}
+
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	handler, statusCode := r.resolve(req.URL.Path, req.Method)
+	if statusCode != http.StatusOK {
+		handler.ServeHTTP(w, req)
+		return
+	}
+
+	for _, middleware := range r.middlewares {
+		handler = middleware(handler)
+	}
+	handler.ServeHTTP(w, req)
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {
 	splitPath := SplitPath(path)
 
-	r.routes.insert(splitPath, &Route{handler}, method)
+	r.handlers.insert(splitPath, handler, method)
 }
 
 func (r *Router) GET(path string, handler http.Handler) {
@@ -50,31 +81,8 @@ func (r *Router) HEAD(path string, handler http.Handler) {
 	r.addRoute(http.MethodHead, path, handler)
 }
 
-func (r *Router) resolve(path string, method string) (http.Handler, int) {
-	splitPath := SplitPath(path)
-	route, statusCode := r.routes.find(splitPath, method)
-
-	switch statusCode {
-	case http.StatusOK:
-		return route.handler, statusCode
-	case http.StatusNotFound:
-		return r.NotFoundHandler, statusCode
-	case http.StatusMethodNotAllowed:
-		return r.MethodNotAllowedHandler, statusCode
-	}
-
-	return r.NotFoundHandler, http.StatusNotFound
-}
-
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, statusCode := r.resolve(req.URL.Path, req.Method)
-	if statusCode != http.StatusOK {
-		handler.ServeHTTP(w, req)
-		return
-	}
-
-	for _, middleware := range r.middlewares {
-		handler = middleware(handler)
-	}
-	handler.ServeHTTP(w, req)
+func (r *Router) AddMiddleware(score int, middleware Middleware) {
+    index := sort.SearchInts(r.middlewareScores, score)
+    insertToIndex(r.middlewareScores, index, score)
+    insertToIndex(r.middlewares, index, middleware)
 }

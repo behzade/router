@@ -4,22 +4,18 @@ import (
 	"net/http"
 )
 
-type Route struct {
-	handler http.Handler
-}
-
 type Tree struct {
 	children map[string]*Tree  // NOTE: map key is path part
-	routes   map[string]*Route // NOTE: map key is http method
+	handlers   map[string]http.Handler // NOTE: map key is http method
 }
 
-func (root *Tree) insert(splitPath []string, route *Route, method string) bool {
+func (root *Tree) insert(splitPath []string, route http.Handler, method string) bool {
 	if len(splitPath) == 0 {
-		_, ok := root.routes[method]
+		_, ok := root.handlers[method]
 		if ok {
 			return false
 		}
-		root.routes[method] = route
+		root.handlers[method] = route
 		return true
 	}
 
@@ -30,19 +26,19 @@ func (root *Tree) insert(splitPath []string, route *Route, method string) bool {
 
 	}
 
-	child = &Tree{map[string]*Tree{}, map[string]*Route{}}
+	child = &Tree{map[string]*Tree{}, map[string]http.Handler{}}
 	child.insert(splitPath[1:], route, method)
 	root.children[splitPath[0]] = child
 	return true
 }
 
-func (root *Tree) find(splitPath []string, method string) (*Route, int) {
+func (root *Tree) find(splitPath []string, method string) (http.Handler, int) {
 	if len(splitPath) == 0 {
-		if len(root.routes) == 0 {
+		if len(root.handlers) == 0 {
 			return nil, http.StatusNotFound
 		}
 
-		route, ok := root.routes[method]
+		route, ok := root.handlers[method]
 		if ok {
 			return route, http.StatusOK
 		}

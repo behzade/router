@@ -16,7 +16,7 @@ type Router struct {
 
 func New() *Router {
 	return &Router{
-		handlers:                &Tree{make(map[string]*Tree), make(map[string]http.Handler)},
+		handlers: &Tree{make(map[string]*Tree), make(map[string]http.Handler)},
 	}
 }
 

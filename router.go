@@ -46,7 +46,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	for _, middleware := range r.middlewares {
-		handler = middleware(handler)
+		handler = middleware.Pipe(handler)
 	}
 	handler.ServeHTTP(w, req)
 }

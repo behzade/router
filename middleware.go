@@ -2,4 +2,6 @@ package router
 
 import "net/http"
 
-type Middleware func(handler http.Handler) http.Handler
+type Middleware interface {
+    Pipe(handler http.Handler) http.Handler
+}

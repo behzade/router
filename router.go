@@ -16,8 +16,6 @@ type Router struct {
 
 func New() *Router {
 	return &Router{
-		NotFoundHandler:         http.HandlerFunc(NotFoundHandlerFunc),
-		MethodNotAllowedHandler: http.HandlerFunc(MethodNotAllowedHandlerFunc),
 		handlers:                &Tree{make(map[string]*Tree), make(map[string]http.Handler)},
 	}
 }
@@ -41,7 +39,10 @@ func (r *Router) resolve(path string, method string) (http.Handler, int) {
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler, statusCode := r.resolve(req.URL.Path, req.Method)
 	if statusCode != http.StatusOK {
-		handler.ServeHTTP(w, req)
+		w.WriteHeader(statusCode)
+		if handler != nil {
+			handler.ServeHTTP(w, req)
+		}
 		return
 	}
 
@@ -82,7 +83,7 @@ func (r *Router) HEAD(path string, handler http.Handler) {
 }
 
 func (r *Router) AddMiddleware(score int, middleware Middleware) {
-    index := sort.SearchInts(r.middlewareScores, score)
-    insertToIndex(r.middlewareScores, index, score)
-    insertToIndex(r.middlewares, index, middleware)
+	index := sort.SearchInts(r.middlewareScores, score)
+	insertToIndex(r.middlewareScores, index, score)
+	insertToIndex(r.middlewares, index, middleware)
 }

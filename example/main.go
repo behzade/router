@@ -11,7 +11,7 @@ func main() {
 	r := router.New()
 
 	r.GET("/", &testHandler{})
-	r.GET("/asd/{var}/{var}/{var}/qqqq/asd/{v1}?asd=22", &testHandler{})
+	r.GET("/asd/{var1}/{var2}/{var3}/qqqq/asd/{v1}?asd=22", &testHandler{})
 	r.POST("/new", router.ToHttpHandler(testFunc))
 
 	for {

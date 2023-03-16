@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 )
@@ -16,13 +17,13 @@ type Router struct {
 
 func New() *Router {
 	return &Router{
-		handlers: &Tree{make(map[string]*Tree), make(map[string]http.Handler)},
+		handlers: &Tree{make(map[string]*Tree), make(map[string]*Tree), make(map[string]http.Handler)},
 	}
 }
 
 func (r *Router) resolve(path string, method string) (http.Handler, int) {
-	splitPath := splitPath(path)
-	route, statusCode := r.handlers.find(splitPath, method)
+	route, pathParams, statusCode := r.handlers.find(split(path), method)
+    fmt.Printf("pathParams: %v\n", pathParams)
 
 	switch statusCode {
 	case http.StatusOK:
@@ -53,9 +54,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {
-	splitPath := splitPath(path)
-
-	r.handlers.insert(splitPath, handler, method)
+	r.handlers.insert(parts(path), handler, method)
 }
 
 func (r *Router) GET(path string, handler http.Handler) {

@@ -9,46 +9,45 @@ type Tree struct {
 	handlers   map[string]http.Handler // NOTE: map key is http method
 }
 
-func (root *Tree) insert(splitPath []string, route http.Handler, method string) bool {
-	if len(splitPath) == 0 {
-		_, ok := root.handlers[method]
+func (t *Tree) insert(pathParts []string, route http.Handler, method string) bool {
+	if len(pathParts) == 0 {
+		_, ok := t.handlers[method]
 		if ok {
 			return false
 		}
-		root.handlers[method] = route
+		t.handlers[method] = route
 		return true
 	}
 
-	child, ok := root.children[splitPath[0]]
+	child, ok := t.children[pathParts[0]]
 
 	if ok {
-		return child.insert(splitPath[1:], route, method)
-
+		return child.insert(pathParts[1:], route, method)
 	}
 
 	child = &Tree{map[string]*Tree{}, map[string]http.Handler{}}
-	child.insert(splitPath[1:], route, method)
-	root.children[splitPath[0]] = child
+	child.insert(pathParts[1:], route, method)
+	t.children[pathParts[0]] = child
 	return true
 }
 
-func (root *Tree) find(splitPath []string, method string) (http.Handler, int) {
-	if len(splitPath) == 0 {
-		if len(root.handlers) == 0 {
+func (t *Tree) find(pathParts []string, method string) (http.Handler, int) {
+	if len(pathParts) == 0 {
+		if len(t.handlers) == 0 {
 			return nil, http.StatusNotFound
 		}
 
-		route, ok := root.handlers[method]
+		route, ok := t.handlers[method]
 		if ok {
 			return route, http.StatusOK
 		}
 		return nil, http.StatusMethodNotAllowed
 	}
 
-	child, ok := root.children[splitPath[0]]
+	child, ok := t.children[pathParts[0]]
 
 	if ok {
-		return child.find(splitPath[1:], method)
+		return child.find(pathParts[1:], method)
 	}
 
 	return nil, http.StatusNotFound

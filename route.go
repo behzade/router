@@ -1,39 +1,48 @@
 package router
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Route struct {
 	handler http.Handler
-	name    *string
 }
 
 type Tree struct {
-	children map[string]*Tree
-	routes   map[string]*Route
+	children map[string]*Tree  // NOTE: map key is path part
+	routes   map[string]*Route // NOTE: map key is http method
 }
 
-func (root *Tree) insert(splitPath []string, route *Route, method string) {
+func (root *Tree) insert(splitPath []string, route *Route, method string) bool {
 	if len(splitPath) == 0 {
+		_, ok := root.routes[method]
+		if ok {
+			return false
+		}
 		root.routes[method] = route
-		return
+		return true
 	}
 
 	child, ok := root.children[splitPath[0]]
 
 	if ok {
-		child.insert(splitPath[1:], route, method)
-		return
+		return child.insert(splitPath[1:], route, method)
+
 	}
 
-	child = &Tree{map[string]*Tree{}, nil}
+	child = &Tree{map[string]*Tree{}, map[string]*Route{}}
 	child.insert(splitPath[1:], route, method)
 	root.children[splitPath[0]] = child
+	return true
 }
 
-func (root *Tree) find(splitPath []string, method string) (*Route, bool) {
+func (root *Tree) find(splitPath []string, method string) (*Route, int) {
 	if len(splitPath) == 0 {
 		route, ok := root.routes[method]
-		return route, ok
+		if ok {
+			return route, http.StatusOK
+		}
+        return nil, http.StatusMethodNotAllowed
 	}
 
 	child, ok := root.children[splitPath[0]]
@@ -42,5 +51,5 @@ func (root *Tree) find(splitPath []string, method string) (*Route, bool) {
 		return child.find(splitPath[1:], method)
 	}
 
-	return nil, false
+	return nil, http.StatusNotFound
 }

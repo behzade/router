@@ -52,7 +52,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {
-	r.handlers.insert(parts(path), handler, method)
+	r.handlers.insert(parts(path), method, handler)
 }
 
 func (r *Router) GET(path string, handler http.Handler) {

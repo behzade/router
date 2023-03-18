@@ -1,6 +1,7 @@
 package router
 
 import (
+	"net/url"
 	"strings"
 )
 
@@ -29,16 +30,20 @@ func isAllowedChar(c rune) bool {
 	return false
 }
 
-func split(path string) []string {
+func parse(path string) ([]string, url.Values) {
 	parts := []string{}
 	var builder strings.Builder
 
-	for _, c := range path {
+	for i, c := range path {
 		if c == '?' {
 			if builder.Len() > 0 {
 				parts = append(parts, builder.String())
 			}
-			return parts
+			queryParams, err := url.ParseQuery(path[i+1:])
+			if err != nil {
+				return parts, nil
+			}
+			return parts, queryParams
 		}
 
 		if c == '/' {
@@ -58,7 +63,7 @@ func split(path string) []string {
 		parts = append(parts, builder.String())
 	}
 
-	return parts
+	return parts, nil
 }
 
 type PathPart struct {
@@ -94,7 +99,7 @@ func parts(path string) []PathPart {
 		if c == '}' && isVariable {
 			parts = append(parts, PathPart{builder.String(), true})
 			isVariable = false
-            builder.Reset()
+			builder.Reset()
 		}
 
 		if isAllowedChar(c) {

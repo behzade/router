@@ -26,7 +26,7 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(req.URL.Path))
 }
 
-func testFunc(i input, _ context.Context) output {
+func testFunc(_ context.Context, i input) output {
 	return output{i.Name}
 }
 

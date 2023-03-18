@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"net/url"
 )
 
 type Tree struct {
@@ -44,7 +45,7 @@ func (t *Tree) insert(pathParts []PathPart, route http.Handler, method string) b
 	return true
 }
 
-func (t *Tree) find(pathParts []string, method string) (http.Handler, map[string]string, int) {
+func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values, int) {
 	defaultStatus := http.StatusNotFound
 	if len(pathParts) == 0 {
 		if len(t.handlers) == 0 {
@@ -53,7 +54,7 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, map[string
 
 		route, ok := t.handlers[method]
 		if ok {
-			return route, map[string]string{}, http.StatusOK
+			return route, url.Values{}, http.StatusOK
 		}
 		return nil, nil, http.StatusMethodNotAllowed
 	}
@@ -68,7 +69,7 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, map[string
 		handler, pathParams, status := child.find(pathParts[1:], method)
 
 		if status == http.StatusOK {
-			pathParams[key] = pathParts[0]
+            pathParams.Add(key, pathParts[0])
 			return handler, pathParams, status
 		}
 

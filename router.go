@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"net/url"
 	"sort"
 )
 
@@ -20,35 +21,38 @@ func New() *Router {
 	}
 }
 
-func (r *Router) resolve(path string, method string) (http.Handler, map[string]string, int) {
-	route, pathParams, statusCode := r.handlers.find(split(path), method)
+func (r *Router) resolve(path string, method string) (http.Handler, url.Values, url.Values, int) {
+	splitPath, queryParams := parse(path)
+	route, pathParams, statusCode := r.handlers.find(splitPath, method)
 
 	switch statusCode {
 	case http.StatusOK:
-		return route, pathParams, statusCode
+		return route, pathParams, queryParams, statusCode
 	case http.StatusNotFound:
-		return r.NotFoundHandler, nil, statusCode
+		return r.NotFoundHandler, nil, nil, statusCode
 	case http.StatusMethodNotAllowed:
-		return r.MethodNotAllowedHandler, nil, statusCode
+		return r.MethodNotAllowedHandler, nil, nil, statusCode
 	}
 
-	return r.NotFoundHandler, nil, http.StatusNotFound
+	return r.NotFoundHandler, nil, nil, http.StatusNotFound
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, _, statusCode := r.resolve(req.URL.Path, req.Method)
+	handler, pathParams, queryParams, statusCode := r.resolve(req.URL.Path, req.Method)
 
 	if statusCode != http.StatusOK {
 		if handler != nil {
 			handler.ServeHTTP(w, req)
-            return
+			return
 		}
 		w.WriteHeader(statusCode)
 		return
 	}
 
+	req.WithContext(setUrlParams(req.Context(), pathParams, queryParams))
+
 	for _, middleware := range r.middlewares {
-		handler = middleware.Pipe(handler)
+		handler = middleware.Next(handler)
 	}
 
 	handler.ServeHTTP(w, req)

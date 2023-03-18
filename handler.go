@@ -8,11 +8,11 @@ import (
 	"github.com/gorilla/schema"
 )
 
-type Handler[T any, R any] func(requestData T, context context.Context) R
+type JsonHandler[T any, R any] func(context context.Context, requestData T) R
 
-func ToHttpHandler[T any, R any](fn Handler[T, R]) http.HandlerFunc{
+func ToHttpHandler[T any, R any](fn JsonHandler[T, R]) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-        data := new(T)
+		data := new(T)
 		if req.Method == http.MethodGet {
 			err := schema.NewDecoder().Decode(data, req.URL.Query())
 			if err != nil {
@@ -25,7 +25,7 @@ func ToHttpHandler[T any, R any](fn Handler[T, R]) http.HandlerFunc{
 			}
 		}
 
-		result := fn(*data, req.Context())
+		result := fn(req.Context(), *data)
 		json.NewEncoder(w).Encode(result)
 	})
 }

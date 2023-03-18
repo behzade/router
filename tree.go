@@ -48,20 +48,22 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 
 func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values, int) {
 	defaultStatus := http.StatusNotFound
+	var defaultHandler http.Handler
+
 	if len(pathParts) == 0 {
 		if len(t.handlers) == 0 {
 			return nil, nil, http.StatusNotFound
 		}
 
 		if method == http.MethodOptions {
-			return &OptionsHandler{keys(t.handlers)}, url.Values{}, http.StatusNoContent
+			return &OptionsHandler{keys(t.handlers), http.StatusOK}, nil, http.StatusOK
 		}
 
 		route, ok := t.handlers[method]
 		if ok {
 			return route, url.Values{}, http.StatusOK
 		}
-		return nil, nil, http.StatusMethodNotAllowed
+		return &OptionsHandler{keys(t.handlers), http.StatusMethodNotAllowed}, nil, http.StatusMethodNotAllowed
 	}
 
 	child, ok := t.staticChildren[pathParts[0]]
@@ -73,15 +75,16 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values
 	for key, child := range t.dynamicChildren {
 		handler, pathParams, status := child.find(pathParts[1:], method)
 
-		if status == http.StatusOK {
+		if status == http.StatusOK || status == http.StatusNoContent {
 			pathParams.Add(key, pathParts[0])
 			return handler, pathParams, status
 		}
 
 		if status == http.StatusMethodNotAllowed {
 			defaultStatus = http.StatusMethodNotAllowed
+			defaultHandler = handler
 		}
 	}
 
-	return nil, nil, defaultStatus
+	return defaultHandler, nil, defaultStatus
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type Middleware interface {
-    Next(handler http.Handler) http.Handler
+	Next(handler http.Handler) http.Handler
 }
 
 type Router struct {
@@ -28,22 +28,25 @@ func New() *Router {
 // resolve the handler for path. returns the handler, pathParams,queryParams and status code
 func (r *Router) resolve(path string, method string) (http.Handler, url.Values, url.Values, int) {
 	splitPath, queryParams := parse(path)
-	route, pathParams, statusCode := r.handlers.find(splitPath, method)
+	handler, pathParams, statusCode := r.handlers.find(splitPath, method)
 
 	switch statusCode {
 	case http.StatusNotFound:
 		return r.NotFoundHandler, nil, nil, statusCode
 	case http.StatusMethodNotAllowed:
-		return r.MethodNotAllowedHandler, nil, nil, statusCode
+		if r.MethodNotAllowedHandler != nil {
+			handler = r.MethodNotAllowedHandler
+		}
+		return handler, pathParams, queryParams, statusCode
 	default:
-		return route, pathParams, queryParams, statusCode
+		return handler, pathParams, queryParams, statusCode
 	}
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler, pathParams, queryParams, statusCode := r.resolve(req.URL.Path, req.Method)
 
-	if statusCode != http.StatusOK && handler == nil {
+	if handler == nil {
 		w.WriteHeader(statusCode)
 		return
 	}

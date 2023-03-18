@@ -13,6 +13,11 @@ func main() {
 
 	r.GET("/", &testHandler{})
 	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", &testHandler{})
+    
+	r.POST("/new", &testHandler{})
+	r.GET("/new", &testHandler{})
+	r.PUT("/new", &testHandler{})
+	r.PATCH("/new", &testHandler{})
 
 	for {
 		http.ListenAndServe("127.0.0.1:8000", r)

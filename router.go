@@ -6,6 +6,10 @@ import (
 	"sort"
 )
 
+type Middleware interface {
+    Next(handler http.Handler) http.Handler
+}
+
 type Router struct {
 	NotFoundHandler         http.Handler
 	MethodNotAllowedHandler http.Handler

@@ -38,11 +38,7 @@ func (r *Router) resolve(path string, method string) (http.Handler, url.Values, 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler, pathParams, queryParams, statusCode := r.resolve(req.URL.Path, req.Method)
 
-	if statusCode != http.StatusOK {
-		if handler != nil {
-			handler.ServeHTTP(w, req)
-			return
-		}
+	if statusCode != http.StatusOK && handler == nil {
 		w.WriteHeader(statusCode)
 		return
 	}

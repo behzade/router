@@ -12,11 +12,7 @@ func main() {
 	r := router.New()
 
 	r.GET("/", &testHandler{})
-	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", router.ToHttpHandler(testFunc))
-	r.POST("/new", router.ToHttpHandler(testFunc))
-	r.GET("/new", router.ToHttpHandler(testFunc))
-	r.PUT("/new", router.ToHttpHandler(testFunc))
-	r.PATCH("/new", router.ToHttpHandler(testFunc))
+	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", &testHandler{})
 
 	for {
 		http.ListenAndServe("127.0.0.1:8000", r)

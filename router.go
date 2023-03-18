@@ -49,13 +49,11 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	req.WithContext(setUrlParams(req.Context(), pathParams, queryParams))
-
 	for _, middleware := range r.middlewares {
 		handler = middleware.Next(handler)
 	}
 
-	handler.ServeHTTP(w, req)
+	handler.ServeHTTP(w, req.WithContext(setUrlParams(req.Context(), pathParams, queryParams)))
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {

@@ -52,6 +52,10 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values
 			return nil, nil, http.StatusNotFound
 		}
 
+        if method == http.MethodOptions {
+            return &OptionsHandler{keys(t.handlers)}, url.Values{}, http.StatusNoContent
+        }
+
 		route, ok := t.handlers[method]
 		if ok {
 			return route, url.Values{}, http.StatusOK

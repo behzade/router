@@ -15,6 +15,14 @@ func insertToIndex[T any](array []T, index int, value T) []T {
 	return array
 }
 
+func keys[T comparable, R any](m map[T]R) []T {
+	keys := make([]T, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 func isAllowedChar(c rune) bool {
 	if c >= 'a' && c <= 'z' {
 		return true
@@ -37,7 +45,7 @@ func parse(path string) ([]string, url.Values) {
 	var builder strings.Builder
 
 	for i, c := range path {
-        c = unicode.ToLower(c)
+		c = unicode.ToLower(c)
 
 		if c == '?' {
 			if builder.Len() > 0 {

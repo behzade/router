@@ -26,15 +26,13 @@ func (r *Router) resolve(path string, method string) (http.Handler, url.Values, 
 	route, pathParams, statusCode := r.handlers.find(splitPath, method)
 
 	switch statusCode {
-	case http.StatusOK:
-		return route, pathParams, queryParams, statusCode
 	case http.StatusNotFound:
 		return r.NotFoundHandler, nil, nil, statusCode
 	case http.StatusMethodNotAllowed:
 		return r.MethodNotAllowedHandler, nil, nil, statusCode
+	default:
+		return route, pathParams, queryParams, statusCode
 	}
-
-	return r.NotFoundHandler, nil, nil, http.StatusNotFound
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {

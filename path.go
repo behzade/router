@@ -73,6 +73,8 @@ func parts(path string) []PathPart {
 	isVariable := false
 
 	for _, c := range path {
+		c = unicode.ToLower(c)
+
 		if c == '?' {
 			if builder.Len() > 0 {
 				parts = append(parts, PathPart{builder.String(), false})

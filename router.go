@@ -75,10 +75,6 @@ func (r *Router) DELETE(path string, handler http.Handler) {
 	r.addRoute(http.MethodDelete, path, handler)
 }
 
-func (r *Router) HEAD(path string, handler http.Handler) {
-	r.addRoute(http.MethodHead, path, handler)
-}
-
 func (r *Router) AddMiddleware(score int, middleware Middleware) {
 	index := sort.SearchInts(r.middlewareScores, score)
 	insertToIndex(r.middlewareScores, index, score)

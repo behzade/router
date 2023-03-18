@@ -14,21 +14,21 @@ type Router struct {
 	NotFoundHandler         http.Handler
 	MethodNotAllowedHandler http.Handler
 
-	handlers         *Tree
+	tree             *Tree
 	middlewares      []Middleware // global middlewares
 	middlewareScores []int
 }
 
 func New() *Router {
 	return &Router{
-		handlers: &Tree{make(map[string]*Tree), make(map[string]*Tree), make(map[string]http.Handler)},
+		tree: &Tree{make(map[string]*Tree), make(map[string]*Tree), make(map[string]http.Handler)},
 	}
 }
 
 // resolve the handler for path. returns the handler, pathParams,queryParams and status code
 func (r *Router) resolve(path string, method string) (http.Handler, url.Values, url.Values, int) {
 	splitPath, queryParams := parse(path)
-	handler, pathParams, statusCode := r.handlers.find(splitPath, method)
+	handler, pathParams, statusCode := r.tree.find(splitPath, method)
 
 	switch statusCode {
 	case http.StatusNotFound:
@@ -59,7 +59,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {
-	r.handlers.insert(parts(path), method, handler)
+	r.tree.insert(parts(path), method, handler)
 }
 
 func (r *Router) GET(path string, handler http.Handler) {

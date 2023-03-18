@@ -14,6 +14,9 @@ func main() {
 	r.GET("/", &testHandler{})
 	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", router.ToHttpHandler(testFunc))
 	r.POST("/new", router.ToHttpHandler(testFunc))
+	r.GET("/new", router.ToHttpHandler(testFunc))
+	r.PUT("/new", router.ToHttpHandler(testFunc))
+	r.PATCH("/new", router.ToHttpHandler(testFunc))
 
 	for {
 		http.ListenAndServe("127.0.0.1:8000", r)
@@ -28,11 +31,11 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func testFunc(ctx context.Context, i input) output {
-    params,ok := router.GetUrlParams(ctx)
-    if !ok {
-        panic("asd")
-    }
-    fmt.Printf("params: %v\n", params)
+	params, ok := router.GetUrlParams(ctx)
+	if !ok {
+		panic("asd")
+	}
+	fmt.Printf("params: %v\n", params)
 
 	return output{i.Name}
 }

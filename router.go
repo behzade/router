@@ -21,6 +21,7 @@ func New() *Router {
 	}
 }
 
+// resolve the handler for path. returns the handler, pathParams,queryParams and status code
 func (r *Router) resolve(path string, method string) (http.Handler, url.Values, url.Values, int) {
 	splitPath, queryParams := parse(path)
 	route, pathParams, statusCode := r.handlers.find(splitPath, method)

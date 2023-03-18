@@ -10,6 +10,10 @@ type OptionsHandler struct {
 }
 
 func (o *OptionsHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Allow", strings.Join(o.options, ", "))
+	w.Header().Set("Allow", o.allowedString())
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (o *OptionsHandler) allowedString() string {
+    return strings.Join(o.options, ", ")
 }

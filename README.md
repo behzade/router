@@ -3,7 +3,7 @@ This is a simple router that is compatible with the standard library http.Handle
 
 ## Features
 - Remove extra slashes: multiple slashes or trailing slashes have no effect on the routing
-- Handle route parameters: add named paramters to the path with {var} syntax. Path and query params are captured and saved in the context as a value.
+- Handle route parameters: add named paramters to the path with {var} syntax. Path params are captured and saved in the context as a value.
 - Builtin Options handler: get the Allow header with an OPTIONS request or on MethodNotAllowed responses.
 - Can use custom not found and method not allowed handlers.
 - Add global middlewares to the router with a score to be sorted by.

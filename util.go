@@ -3,6 +3,7 @@ package router
 import (
 	"net/url"
 	"strings"
+	"unicode"
 )
 
 func insertToIndex[T any](array []T, index int, value T) []T {
@@ -35,6 +36,8 @@ func parse(path string) ([]string, url.Values) {
 	var builder strings.Builder
 
 	for i, c := range path {
+        c = unicode.ToLower(c)
+
 		if c == '?' {
 			if builder.Len() > 0 {
 				parts = append(parts, builder.String())

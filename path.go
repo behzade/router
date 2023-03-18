@@ -1,7 +1,6 @@
 package router
 
 import (
-	"net/url"
 	"strings"
 	"unicode"
 )
@@ -23,23 +22,12 @@ func isAllowedChar(c rune) bool {
 }
 
 // parse path to get usable parts for router and query params
-func parse(path string) ([]string, url.Values) {
+func parse(path string) []string {
 	parts := []string{}
 	var builder strings.Builder
 
-	for i, c := range path {
+	for _, c := range path {
 		c = unicode.ToLower(c)
-
-		if c == '?' {
-			if builder.Len() > 0 {
-				parts = append(parts, builder.String())
-			}
-			queryParams, err := url.ParseQuery(path[i+1:])
-			if err != nil {
-				return parts, nil
-			}
-			return parts, queryParams
-		}
 
 		if c == '/' {
 			if builder.Len() > 0 {
@@ -58,7 +46,7 @@ func parse(path string) ([]string, url.Values) {
 		parts = append(parts, builder.String())
 	}
 
-	return parts, nil
+	return parts
 }
 
 type PathPart struct {
@@ -74,13 +62,6 @@ func parts(path string) []PathPart {
 
 	for _, c := range path {
 		c = unicode.ToLower(c)
-
-		if c == '?' {
-			if builder.Len() > 0 {
-				parts = append(parts, PathPart{builder.String(), false})
-			}
-			return parts
-		}
 
 		if c == '/' {
 			if builder.Len() > 0 {

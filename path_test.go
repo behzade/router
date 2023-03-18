@@ -1,37 +1,30 @@
 package router
 
 import (
-	"net/url"
 	"reflect"
 	"testing"
 )
 
 type pathParseResult struct {
-	queryParams url.Values
-	parts       []string
+	parts []string
 }
 
 var pathParseTests = map[string]pathParseResult{
-	"/":                               {nil, []string{}},
-	"":                                {nil, []string{}},
-	"/user":                           {nil, []string{"user"}},
-	"/user/profile":                   {nil, []string{"user", "profile"}},
-	"/user//profile":                  {nil, []string{"user", "profile"}},
-	"/user//Profile":                  {nil, []string{"user", "profile"}},
-	"/user//Profile/":                 {nil, []string{"user", "profile"}},
-	"/user/profile?id=2":              {url.Values{"id": []string{"2"}}, []string{"user", "profile"}},
-	"/product/123/details?sort=likes": {url.Values{"sort": []string{"likes"}}, []string{"product", "123", "details"}},
+	"/":                    {[]string{}},
+	"":                     {[]string{}},
+	"/user":                {[]string{"user"}},
+	"/user/profile":        {[]string{"user", "profile"}},
+	"/user//profile":       {[]string{"user", "profile"}},
+	"/user//Profile":       {[]string{"user", "profile"}},
+	"/user//Profile/":      {[]string{"user", "profile"}},
+	"/product/123/details": {[]string{"product", "123", "details"}},
 }
 
 func TestParse(t *testing.T) {
 	for path, result := range pathParseTests {
-		parts, queryParams := parse(path)
+		parts := parse(path)
 		if !reflect.DeepEqual(result.parts, parts) {
 			t.Errorf("Parse error: want %q got %q", result.parts, parts)
-		}
-
-		if !reflect.DeepEqual(result.queryParams, queryParams) {
-			t.Errorf("Parse error: want %q got %q", result.queryParams, queryParams)
 		}
 	}
 }

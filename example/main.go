@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -11,13 +10,16 @@ import (
 func main() {
 	r := router.New()
 
-	r.GET("/", &testHandler{})
-	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", &testHandler{})
-    
-	r.POST("/new", &testHandler{})
-	r.GET("/new", &testHandler{})
-	r.PUT("/new", &testHandler{})
-	r.PATCH("/new", &testHandler{})
+	r.GET("/", &indexHandler{})
+	r.GET("/v1/product/{product-id}/comments", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		productId := router.GetPathParams(r.Context()).Get("product-id")
+
+		fmt.Fprintf(w, "Product %v comments", productId)
+	}))
+
+	r.POST("/v1/product/{product-id}/comments", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Do stuff
+    }))
 
 	for {
 		http.ListenAndServe("127.0.0.1:8000", r)
@@ -25,26 +27,15 @@ func main() {
 
 }
 
+type indexHandler struct {
+}
+
+func (t *indexHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Write([]byte("hello world!"))
+}
+
 type testHandler struct{}
 
 func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(req.URL.Path))
-}
-
-func testFunc(ctx context.Context, i input) output {
-	params, ok := router.GetUrlParams(ctx)
-	if !ok {
-		panic("asd")
-	}
-	fmt.Printf("params: %v\n", params)
-
-	return output{i.Name}
-}
-
-type input struct {
-	Name string
-}
-
-type output struct {
-	Name2 string
 }

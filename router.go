@@ -25,26 +25,25 @@ func New() *Router {
 	}
 }
 
-// resolve the handler for path. returns the handler, pathParams,queryParams and status code
-func (r *Router) resolve(path string, method string) (http.Handler, url.Values, url.Values, int) {
-	splitPath, queryParams := parse(path)
-	handler, pathParams, statusCode := r.tree.find(splitPath, method)
+// resolve the handler for path. returns the handler, pathParams and status code
+func (r *Router) resolve(path string, method string) (http.Handler, url.Values, int) {
+	handler, pathParams, statusCode := r.tree.find(parse(path), method)
 
 	switch statusCode {
 	case http.StatusNotFound:
-		return r.NotFoundHandler, nil, nil, statusCode
+		return r.NotFoundHandler, nil, statusCode
 	case http.StatusMethodNotAllowed:
 		if r.MethodNotAllowedHandler != nil {
 			handler = r.MethodNotAllowedHandler
 		}
-		return handler, pathParams, queryParams, statusCode
+		return handler, pathParams, statusCode
 	default:
-		return handler, pathParams, queryParams, statusCode
+		return handler, pathParams, statusCode
 	}
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, pathParams, queryParams, statusCode := r.resolve(req.URL.Path, req.Method)
+	handler, pathParams, statusCode := r.resolve(req.URL.Path, req.Method)
 
 	if handler == nil {
 		w.WriteHeader(statusCode)
@@ -55,7 +54,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		handler = middleware.Next(handler)
 	}
 
-	handler.ServeHTTP(w, req.WithContext(setUrlParams(req.Context(), pathParams, queryParams)))
+	handler.ServeHTTP(w, req.WithContext(setPathParams(req.Context(), pathParams)))
 }
 
 func (r *Router) addRoute(method string, path string, handler http.Handler) {

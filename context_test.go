@@ -9,23 +9,14 @@ import (
 
 func TestUrlParams(t *testing.T) {
 	ctx := context.Background()
-	params := urlParams{
-		url.Values{
-			"var1":       []string{"asd", "test"},
-			"product-id": []string{"324"},
-		},
-		url.Values{
-			"id":   []string{"1"},
-			"sort": []string{"asc"},
-		},
+	pathParams := url.Values{
+		"var1":       []string{"asd", "test"},
+		"product-id": []string{"324"},
 	}
-	newCtx := setUrlParams(ctx, params.PathParams, params.QueryParams)
+	newCtx := setPathParams(ctx, pathParams)
 
-	newParams, ok := GetUrlParams(newCtx)
-	if !ok {
-		t.Error("Url Params error: failed to get")
-	}
-	if !reflect.DeepEqual(params, newParams) {
-		t.Errorf("Url Params error: expected %q got %q", params, newParams)
+	newParams := GetPathParams(newCtx)
+	if !reflect.DeepEqual(pathParams, newParams) {
+		t.Errorf("Url Params error: expected %q got %q", pathParams, newParams)
 	}
 }

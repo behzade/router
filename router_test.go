@@ -2,7 +2,6 @@ package router
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"testing"
 )
@@ -34,7 +33,6 @@ func TestRouter(t *testing.T) {
 	router.ServeHTTP(w, r)
 	if !get {
 		t.Error("routing GET failed")
-        fmt.Printf("w: %v\n", w)
 	}
 
 	r, _ = http.NewRequest(http.MethodPost, "/POST", nil)

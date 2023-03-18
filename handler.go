@@ -14,7 +14,9 @@ func ToHttpHandler[T any, R any](fn JsonHandler[T, R]) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		data := new(T)
 		if req.Method == http.MethodGet {
-			err := schema.NewDecoder().Decode(data, req.URL.Query())
+			encoder := schema.NewDecoder()
+			encoder.IgnoreUnknownKeys(true)
+			err := encoder.Decode(data, req.URL.Query())
 			if err != nil {
 				panic(err)
 			}

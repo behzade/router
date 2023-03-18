@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/behzade/router"
@@ -11,7 +12,7 @@ func main() {
 	r := router.New()
 
 	r.GET("/", &testHandler{})
-	r.GET("/asd/{var1}/{var2}/{var3}/qqqq/asd/{v1}?asd=22", &testHandler{})
+	r.GET("/asd/{v1}/{v2}/{v1}/qqqq/asd/{v1}?asd=22", router.ToHttpHandler(testFunc))
 	r.POST("/new", router.ToHttpHandler(testFunc))
 
 	for {
@@ -26,7 +27,13 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(req.URL.Path))
 }
 
-func testFunc(_ context.Context, i input) output {
+func testFunc(ctx context.Context, i input) output {
+    params,ok := router.GetUrlParams(ctx)
+    if !ok {
+        panic("asd")
+    }
+    fmt.Printf("params: %v\n", params)
+
 	return output{i.Name}
 }
 

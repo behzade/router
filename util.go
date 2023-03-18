@@ -31,6 +31,7 @@ func isAllowedChar(c rune) bool {
 	return false
 }
 
+// parse path to get usable parts for router and query params
 func parse(path string) ([]string, url.Values) {
 	parts := []string{}
 	var builder strings.Builder
@@ -74,6 +75,7 @@ type PathPart struct {
 	IsVariable bool
 }
 
+// split path to variable and constant parts
 func parts(path string) []PathPart {
 	parts := []PathPart{}
 	var builder strings.Builder

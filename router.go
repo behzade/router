@@ -57,28 +57,28 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler.ServeHTTP(w, req.WithContext(setPathParams(req.Context(), pathParams)))
 }
 
-func (r *Router) addRoute(method string, path string, handler http.Handler) {
+func (r *Router) AddRoute(method string, path string, handler http.Handler) {
 	r.tree.insert(parts(path), method, handler)
 }
 
 func (r *Router) GET(path string, handler http.Handler) {
-	r.addRoute(http.MethodGet, path, handler)
+	r.AddRoute(http.MethodGet, path, handler)
 }
 
 func (r *Router) POST(path string, handler http.Handler) {
-	r.addRoute(http.MethodPost, path, handler)
+	r.AddRoute(http.MethodPost, path, handler)
 }
 
 func (r *Router) PUT(path string, handler http.Handler) {
-	r.addRoute(http.MethodPut, path, handler)
+	r.AddRoute(http.MethodPut, path, handler)
 }
 
 func (r *Router) PATCH(path string, handler http.Handler) {
-	r.addRoute(http.MethodPatch, path, handler)
+	r.AddRoute(http.MethodPatch, path, handler)
 }
 
 func (r *Router) DELETE(path string, handler http.Handler) {
-	r.addRoute(http.MethodDelete, path, handler)
+	r.AddRoute(http.MethodDelete, path, handler)
 }
 
 func (r *Router) AddMiddleware(score int, middleware Middleware) {

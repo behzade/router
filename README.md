@@ -1,5 +1,5 @@
 # Simple Router
-This is a simple router that is compatible with the standard library http.Handler interface.
+A router compatible with the standard library http.Handler interface.
 
 ## Features
 - Remove extra characters: invalid characters and extra/trailing slashes have no effect on the routing

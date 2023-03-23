@@ -76,12 +76,9 @@ func (root *Tree) findNode(path string, offset int, params url.Values) (*Tree, b
 }
 
 func (root *Tree) findHandler(path string, method string) (http.Handler, url.Values, int) {
-	var node *Tree
-	var ok bool
-
 	params := url.Values{}
 
-	node, ok = root.findNode(path, 0, params)
+	node, ok := root.findNode(path, 0, params)
 
 	if !ok {
 		return nil, nil, http.StatusNotFound

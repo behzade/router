@@ -27,7 +27,7 @@ func New() *Router {
 
 // resolve the handler for path. returns the handler, pathParams and status code
 func (r *Router) resolve(path string, method string) (http.Handler, url.Values, int) {
-	handler, pathParams, statusCode := r.tree.findHandler(parse(path), method)
+	handler, pathParams, statusCode := r.tree.findHandler(path, method)
 
 	switch statusCode {
 	case http.StatusNotFound:

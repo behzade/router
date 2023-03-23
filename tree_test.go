@@ -68,8 +68,7 @@ func TestTree(t *testing.T) {
 		}
 	}
 	for _, testCase := range insertTests {
-		parts := parse(testCase.pathInstance)
-		handler, pathParams, statusCode := tree.findHandler(parts, testCase.method)
+		handler, pathParams, statusCode := tree.findHandler(testCase.pathInstance, testCase.method)
 		if !reflect.DeepEqual(testCase.handler, handler) {
 			t.Errorf("Tree find error: expected %v got %v", testCase.handler, handler)
 		}
@@ -84,8 +83,7 @@ func TestTree(t *testing.T) {
 	}
 
 	for _, testCase := range notFoundTests {
-		parts := parse(testCase.path)
-		handler, _, statusCode := tree.findHandler(parts, testCase.method)
+		handler, _, statusCode := tree.findHandler(testCase.path, testCase.method)
 		if statusCode != http.StatusNotFound {
 			t.Errorf("Tree find error: route %v expected %v got %v", testCase.path, http.StatusNotFound, statusCode)
 		}
@@ -96,8 +94,7 @@ func TestTree(t *testing.T) {
 	}
 
 	for _, testCase := range methodNotAllowedTests {
-		parts := parse(testCase.path)
-		_, _, statusCode := tree.findHandler(parts, testCase.method)
+		_, _, statusCode := tree.findHandler(testCase.path, testCase.method)
 		if statusCode != http.StatusMethodNotAllowed {
 			t.Errorf("Tree find error: expected %v got %v", http.StatusMethodNotAllowed, statusCode)
 		}

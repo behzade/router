@@ -70,20 +70,19 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values
 	var child *Tree
 	child, ok = t.staticChildren[pathParts[0]]
 
+    var pathParams url.Values
 	if ok {
-		handlerasd, pathParams, statuss := child.find(pathParts[1:], method)
-		if statuss == http.StatusOK {
-			return handlerasd, pathParams, statuss
+		handler, pathParams, status = child.find(pathParts[1:], method)
+		if status == http.StatusOK {
+			return handler, pathParams, status
 		}
 
-		if statuss == http.StatusMethodNotAllowed {
+		if status == http.StatusMethodNotAllowed {
 			status = http.StatusMethodNotAllowed
-			handler = handlerasd
 		}
 	}
 
 	var key string
-    var pathParams url.Values
 	for key, child = range t.dynamicChildren {
 		handler, pathParams, status = child.find(pathParts[1:], method)
 

@@ -47,8 +47,8 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 }
 
 func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values, int) {
-	defaultStatus := http.StatusNotFound
-	var defaultHandler http.Handler
+	var handler http.Handler
+	var ok bool
 
 	if len(pathParts) == 0 {
 		if len(t.handlers) == 0 {
@@ -59,29 +59,33 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values
 			return &OptionsHandler{keys(t.handlers), http.StatusOK}, url.Values{}, http.StatusOK
 		}
 
-		route, ok := t.handlers[method]
+		handler, ok = t.handlers[method]
 		if ok {
-			return route, url.Values{}, http.StatusOK
+			return handler, url.Values{}, http.StatusOK
 		}
 		return &OptionsHandler{keys(t.handlers), http.StatusMethodNotAllowed}, nil, http.StatusMethodNotAllowed
 	}
 
-	child, ok := t.staticChildren[pathParts[0]]
+	status := http.StatusNotFound
+	var child *Tree
+	child, ok = t.staticChildren[pathParts[0]]
 
 	if ok {
-		handler, pathParams, status := child.find(pathParts[1:], method)
-		if status == http.StatusOK {
-			return handler, pathParams, status
+		handlerasd, pathParams, statuss := child.find(pathParts[1:], method)
+		if statuss == http.StatusOK {
+			return handlerasd, pathParams, statuss
 		}
 
-		if status == http.StatusMethodNotAllowed {
-			defaultStatus = http.StatusMethodNotAllowed
-			defaultHandler = handler
+		if statuss == http.StatusMethodNotAllowed {
+			status = http.StatusMethodNotAllowed
+			handler = handlerasd
 		}
 	}
 
-	for key, child := range t.dynamicChildren {
-		handler, pathParams, status := child.find(pathParts[1:], method)
+	var key string
+    var pathParams url.Values
+	for key, child = range t.dynamicChildren {
+		handler, pathParams, status = child.find(pathParts[1:], method)
 
 		if status == http.StatusOK {
 			pathParams.Add(key, pathParts[0])
@@ -89,10 +93,9 @@ func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values
 		}
 
 		if status == http.StatusMethodNotAllowed {
-			defaultStatus = http.StatusMethodNotAllowed
-			defaultHandler = handler
+			status = http.StatusMethodNotAllowed
 		}
 	}
 
-	return defaultHandler, nil, defaultStatus
+	return handler, nil, status
 }

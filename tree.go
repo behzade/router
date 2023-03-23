@@ -48,22 +48,22 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 	return true
 }
 
-func (t *Tree) findNode(pathParts []string, params url.Values) (*Tree, bool) {
+func (root *Tree) findNode(pathParts []string, params url.Values) (*Tree, bool) {
 	if len(pathParts) == 0 {
-		return t, true
+		return root, true
 	}
 
 	var child *Tree
 	var ok bool
 
-	child, ok = t.staticChildren[pathParts[0]]
+	child, ok = root.staticChildren[pathParts[0]]
 
 	if ok {
 		return child.findNode(pathParts[1:], params)
 	}
 
 	var key string
-	for key, child = range t.dynamicChildren {
+	for key, child = range root.dynamicChildren {
 		child, ok = child.findNode(pathParts[1:], params)
 
 		if ok {
@@ -74,19 +74,19 @@ func (t *Tree) findNode(pathParts []string, params url.Values) (*Tree, bool) {
 	return nil, false
 }
 
-func (t *Tree) findHandler(pathParts []string, method string) (http.Handler, url.Values, int) {
+func (root *Tree) findHandler(pathParts []string, method string) (http.Handler, url.Values, int) {
 	var node *Tree
 	var ok bool
 
 	params := url.Values{}
 
-	node, ok = t.findNode(pathParts, params)
+	node, ok = root.findNode(pathParts, params)
 
 	if !ok {
 		return nil, nil, http.StatusNotFound
 	}
 	if method == http.MethodOptions {
-		return &OptionsHandler{keys(t.handlers), http.StatusOK}, nil, http.StatusOK
+		return &OptionsHandler{keys(root.handlers), http.StatusOK}, nil, http.StatusOK
 	}
 
 	if len(node.handlers) == 0 {
@@ -98,7 +98,7 @@ func (t *Tree) findHandler(pathParts []string, method string) (http.Handler, url
 	handler, ok = node.handlers[method]
 
 	if !ok {
-		return &OptionsHandler{keys(t.handlers), http.StatusMethodNotAllowed}, params, http.StatusMethodNotAllowed
+		return &OptionsHandler{keys(root.handlers), http.StatusMethodNotAllowed}, params, http.StatusMethodNotAllowed
 	}
 	return handler, params, http.StatusOK
 }

@@ -1,8 +1,10 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Tree struct {
@@ -46,55 +48,73 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 	return true
 }
 
-func (t *Tree) find(pathParts []string, method string) (http.Handler, url.Values, int) {
-	var handler http.Handler
-	var ok bool
-
+func (t *Tree) findNode(pathParts []string, params url.Values) (*Tree, bool) {
 	if len(pathParts) == 0 {
-		if len(t.handlers) == 0 {
-			return nil, nil, http.StatusNotFound
-		}
-
-		if method == http.MethodOptions {
-			return &OptionsHandler{keys(t.handlers), http.StatusOK}, url.Values{}, http.StatusOK
-		}
-
-		handler, ok = t.handlers[method]
-		if ok {
-			return handler, url.Values{}, http.StatusOK
-		}
-		return &OptionsHandler{keys(t.handlers), http.StatusMethodNotAllowed}, nil, http.StatusMethodNotAllowed
+		return t, true
 	}
 
-	status := http.StatusNotFound
 	var child *Tree
+	var ok bool
+
 	child, ok = t.staticChildren[pathParts[0]]
 
-    var pathParams url.Values
 	if ok {
-		handler, pathParams, status = child.find(pathParts[1:], method)
-		if status == http.StatusOK {
-			return handler, pathParams, status
-		}
-
-		if status == http.StatusMethodNotAllowed {
-			status = http.StatusMethodNotAllowed
-		}
+		return child.findNode(pathParts[1:], params)
 	}
 
 	var key string
 	for key, child = range t.dynamicChildren {
-		handler, pathParams, status = child.find(pathParts[1:], method)
+		child, ok = child.findNode(pathParts[1:], params)
 
-		if status == http.StatusOK {
-			pathParams.Add(key, pathParts[0])
-			return handler, pathParams, status
-		}
-
-		if status == http.StatusMethodNotAllowed {
-			status = http.StatusMethodNotAllowed
+		if ok {
+			params.Add(key, pathParts[0])
+			return child, true
 		}
 	}
+	return nil, false
+}
 
-	return handler, nil, status
+func (t *Tree) findHandler(pathParts []string, method string) (http.Handler, url.Values, int) {
+	var node *Tree
+	var ok bool
+
+	params := url.Values{}
+
+	node, ok = t.findNode(pathParts, params)
+
+	if !ok {
+		return nil, nil, http.StatusNotFound
+	}
+	if method == http.MethodOptions {
+		return &OptionsHandler{keys(t.handlers), http.StatusOK}, nil, http.StatusOK
+	}
+
+	if len(node.handlers) == 0 {
+		return nil, params, http.StatusNotFound
+	}
+
+	var handler http.Handler
+
+	handler, ok = node.handlers[method]
+
+	if !ok {
+		return &OptionsHandler{keys(t.handlers), http.StatusMethodNotAllowed}, params, http.StatusMethodNotAllowed
+	}
+	return handler, params, http.StatusOK
+}
+
+func (t *Tree) String() string {
+	var builder strings.Builder
+	if len(t.handlers) != 0 {
+		builder.WriteString(fmt.Sprintf(": %v\n", keys(t.handlers)))
+	}
+
+	for route, child := range t.staticChildren {
+        builder.WriteString(fmt.Sprintf("%v/%v", route, child.String()))
+	}
+
+	for route, child := range t.dynamicChildren {
+		builder.WriteString(fmt.Sprintf("{%v}/%v", route, child.String()))
+	}
+	return builder.String()
 }

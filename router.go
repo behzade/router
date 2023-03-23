@@ -27,7 +27,7 @@ func New() *Router {
 
 // resolve the handler for path. returns the handler, pathParams and status code
 func (r *Router) resolve(path string, method string) (http.Handler, url.Values, int) {
-	handler, pathParams, statusCode := r.tree.find(parse(path), method)
+	handler, pathParams, statusCode := r.tree.findHandler(parse(path), method)
 
 	switch statusCode {
 	case http.StatusNotFound:
@@ -85,4 +85,8 @@ func (r *Router) AddMiddleware(score int, middleware Middleware) {
 	index := sort.SearchInts(r.middlewareScores, score)
 	insertToIndex(r.middlewareScores, index, score)
 	insertToIndex(r.middlewares, index, middleware)
+}
+
+func (r *Router) String() string {
+    return r.tree.String()
 }

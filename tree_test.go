@@ -69,45 +69,37 @@ func TestTree(t *testing.T) {
 	}
 	for _, testCase := range insertTests {
 		parts := parse(testCase.pathInstance)
-		handler, pathParams, statusCode := tree.find(parts, testCase.method)
+		handler, pathParams, statusCode := tree.findHandler(parts, testCase.method)
 		if !reflect.DeepEqual(testCase.handler, handler) {
-			t.Errorf("Tree find error: expected %q got %q", testCase.handler, handler)
+			t.Errorf("Tree find error: expected %v got %v", testCase.handler, handler)
 		}
 
 		if !reflect.DeepEqual(testCase.pathParams, pathParams) {
-			t.Errorf("Tree find error: expected %q got %q", testCase.pathParams, pathParams)
+			t.Errorf("Tree find error: expected %v got %v", testCase.pathParams, pathParams)
 		}
 
 		if !reflect.DeepEqual(http.StatusOK, statusCode) {
-			t.Errorf("Tree find error: expected %q got %q", http.StatusOK, statusCode)
+			t.Errorf("Tree find error: expected %v got %v", http.StatusOK, statusCode)
 		}
 	}
 
 	for _, testCase := range notFoundTests {
 		parts := parse(testCase.path)
-		handler, pathParams, statusCode := tree.find(parts, testCase.method)
+		handler, _, statusCode := tree.findHandler(parts, testCase.method)
 		if statusCode != http.StatusNotFound {
-			t.Errorf("Tree find error: expected %q got %q", http.StatusNotFound, statusCode)
-		}
-
-		if pathParams != nil {
-			t.Errorf("Tree find error: expected %v got %q", nil, pathParams)
+			t.Errorf("Tree find error: route %v expected %v got %v", testCase.path, http.StatusNotFound, statusCode)
 		}
 
 		if handler != nil {
-			t.Errorf("Tree find error: expected %v got %q", nil, handler)
+			t.Errorf("Tree find error: expected %v got %v", nil, handler)
 		}
 	}
 
 	for _, testCase := range methodNotAllowedTests {
 		parts := parse(testCase.path)
-		_, pathParams, statusCode := tree.find(parts, testCase.method)
+		_, _, statusCode := tree.findHandler(parts, testCase.method)
 		if statusCode != http.StatusMethodNotAllowed {
-			t.Errorf("Tree find error: expected %q got %q", http.StatusMethodNotAllowed, statusCode)
-		}
-
-		if pathParams != nil {
-			t.Errorf("Tree find error: expected %v got %q", nil, pathParams)
+			t.Errorf("Tree find error: expected %v got %v", http.StatusMethodNotAllowed, statusCode)
 		}
 	}
 }

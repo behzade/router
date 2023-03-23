@@ -110,7 +110,7 @@ func (t *Tree) String() string {
 	}
 
 	for route, child := range t.staticChildren {
-        builder.WriteString(fmt.Sprintf("%v/%v", route, child.String()))
+		builder.WriteString(fmt.Sprintf("%v/%v", route, child.String()))
 	}
 
 	for route, child := range t.dynamicChildren {

@@ -49,6 +49,10 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 }
 
 func (root *Tree) findNode(path string, params url.Values) (*Tree, bool) {
+    if path == "" {
+		return root, true
+    }
+
 	part, rest := parse(path)
 	if part == "" {
 		return root, true

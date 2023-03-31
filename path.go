@@ -25,20 +25,21 @@ func writeAllowedByte(c byte, b *strings.Builder) {
 
 // parse path to get usable parts for router and query params
 func parse(path string) (string, string) {
-	var buf [128]byte
+	var buf [256]byte
 	var i int
 	var n int
 
 	for ; i < len(path); i++ {
-		if path[i] == '/' && n > 0 {
+        c := path[i]
+		if c == '/' && n > 0 {
 			return string(buf[:n]), path[i+1:]
 		}
 
-		if path[i] >= 'a' && path[i] <= 'z' || path[i] >= '0' && path[i] <= '9' || path[i] == '-' {
-			buf[n] = path[i]
+		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
+			buf[n] = c
 			n++
-		} else if path[i] >= 'A' && path[i] <= 'Z' {
-			buf[n] = path[i] + 32 // to lower
+		} else if c >= 'A' && c <= 'Z' {
+			buf[n] = c + 32 // to lower
 			n++
 		}
 

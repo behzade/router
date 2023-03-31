@@ -38,7 +38,7 @@ func parse(path string) (string, string) {
 			buf[n] = path[i]
 			n++
 		} else if path[i] >= 'A' && path[i] <= 'Z' {
-			buf[n] = byte(unicode.ToLower(rune(path[i])))
+			buf[n] = path[i] + 32 // to lower
 			n++
 		}
 

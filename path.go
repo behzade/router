@@ -24,19 +24,28 @@ func writeAllowedByte(c byte, b *strings.Builder) {
 }
 
 // parse path to get usable parts for router and query params
-func parse(path string, offset int) (string, int) {
-	var builder strings.Builder
+func parse(path string) (string, string) {
+	var buf [128]byte
+	var i int
+	var n int
 
-	for ; offset < len(path); offset++ {
-		if path[offset] == '/' {
-			if builder.Len() > 0 {
-				return builder.String(), offset + 1
-			}
+	for ; i < len(path); i++ {
+		if path[i] == '/' && n > 0 {
+			return string(buf[:n]), path[i+1:]
 		}
 
-		writeAllowedByte(path[offset], &builder)
+		if path[i] >= 'a' && path[i] <= 'z' || path[i] >= '0' && path[i] <= '9' || path[i] == '-' {
+			buf[n] = path[i]
+			n++
+		}
+
+        if path[i] >= 'A' && path[i] <= 'Z' {
+			buf[n] = byte(unicode.ToLower(rune(path[i])))
+			n++
+        }
+
 	}
-	return builder.String(), offset
+	return string(buf[:n]), path[i:]
 }
 
 type PathPart struct {

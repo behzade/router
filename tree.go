@@ -48,8 +48,8 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 	return true
 }
 
-func (root *Tree) findNode(path string, offset int, params url.Values) (*Tree, bool) {
-	part, offset := parse(path, offset)
+func (root *Tree) findNode(path string, params url.Values) (*Tree, bool) {
+	part, rest := parse(path)
 	if part == "" {
 		return root, true
 	}
@@ -60,12 +60,12 @@ func (root *Tree) findNode(path string, offset int, params url.Values) (*Tree, b
 	child, ok = root.staticChildren[part]
 
 	if ok {
-		return child.findNode(path, offset, params)
+		return child.findNode(rest, params)
 	}
 
 	var key string
 	for key, child = range root.dynamicChildren {
-		child, ok = child.findNode(path, offset, params)
+		child, ok = child.findNode(rest, params)
 
 		if ok {
 			params.Add(key, part)
@@ -78,7 +78,7 @@ func (root *Tree) findNode(path string, offset int, params url.Values) (*Tree, b
 func (root *Tree) findHandler(path string, method string) (http.Handler, url.Values, int) {
 	params := url.Values{}
 
-	node, ok := root.findNode(path, 0, params)
+	node, ok := root.findNode(path, params)
 
 	if !ok {
 		return nil, nil, http.StatusNotFound

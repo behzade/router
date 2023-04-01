@@ -23,6 +23,34 @@ func writeAllowedByte(c byte, b *strings.Builder) {
 	}
 }
 
+type path struct {
+    path string
+    offset int
+    buf [256]byte
+}
+
+func (p *path) parse() string {
+    var n int
+
+	for ; p.offset < len(p.path); p.offset++ {
+        c := p.path[p.offset]
+		if c == '/' && n > 0 {
+            p.offset++
+			return string(p.buf[:n])
+		}
+
+		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
+			p.buf[n] = c
+			n++
+		} else if c >= 'A' && c <= 'Z' {
+			p.buf[n] = c + 32 // to lower
+			n++
+		}
+
+	}
+	return string(p.buf[:n])
+}
+
 // parse path to get usable parts for router and query params
 func parse(path string) (string, string) {
 	var buf [256]byte

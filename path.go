@@ -5,48 +5,46 @@ import (
 	"unicode"
 )
 
-func isAllowedChar(c rune) bool {
+func writeAllowedByte(c byte, b *strings.Builder) {
 	if c >= 'a' && c <= 'z' {
-		return true
+		b.WriteByte(c)
+	}
+
+	if c >= 'A' && c <= 'Z' {
+		b.WriteRune(unicode.ToLower(rune(c)))
 	}
 
 	if c >= '0' && c <= '9' {
-		return true
+		b.WriteByte(c)
 	}
 
 	if c == '-' {
-		return true
+		b.WriteByte(c)
 	}
-
-	return false
 }
 
 // parse path to get usable parts for router and query params
-func parse(path string) []string {
-	parts := []string{}
-	var builder strings.Builder
+func parse(path string) (string, string) {
+	var buf [256]byte
+	var i int
+	var n int
 
-	for _, c := range path {
-		c = unicode.ToLower(c)
-
-		if c == '/' {
-			if builder.Len() > 0 {
-				parts = append(parts, builder.String())
-				builder.Reset()
-			}
-			continue
+	for ; i < len(path); i++ {
+        c := path[i]
+		if c == '/' && n > 0 {
+			return string(buf[:n]), path[i+1:]
 		}
 
-		if isAllowedChar(c) {
-			builder.WriteRune(c)
+		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
+			buf[n] = c
+			n++
+		} else if c >= 'A' && c <= 'Z' {
+			buf[n] = c + 32 // to lower
+			n++
 		}
-	}
 
-	if builder.Len() > 0 {
-		parts = append(parts, builder.String())
 	}
-
-	return parts
+	return string(buf[:n]), path[i:]
 }
 
 type PathPart struct {
@@ -60,9 +58,7 @@ func parts(path string) []PathPart {
 	var builder strings.Builder
 	isVariable := false
 
-	for _, c := range path {
-		c = unicode.ToLower(c)
-
+	for i, c := range path {
 		if c == '/' {
 			if builder.Len() > 0 {
 				parts = append(parts, PathPart{builder.String(), false})
@@ -81,9 +77,7 @@ func parts(path string) []PathPart {
 			builder.Reset()
 		}
 
-		if isAllowedChar(c) {
-			builder.WriteRune(c)
-		}
+		writeAllowedByte(path[i], &builder)
 	}
 
 	if builder.Len() > 0 {

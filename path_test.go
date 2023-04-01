@@ -22,9 +22,13 @@ var pathParseTests = map[string]pathParseResult{
 
 func TestParse(t *testing.T) {
 	for path, result := range pathParseTests {
-		parts := parse(path)
-		if !reflect.DeepEqual(result.parts, parts) {
-			t.Errorf("Parse error: want %q got %q", result.parts, parts)
+		var parsedPart string
+        rest := path
+		for _, part := range result.parts {
+            parsedPart, rest = parse(rest)
+			if part != parsedPart {
+				t.Errorf("Parse error: want %q got %q", part, parsedPart)
+			}
 		}
 	}
 }

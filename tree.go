@@ -54,14 +54,14 @@ func (root *Tree) findNode(path string, params url.Values) (*Tree, bool) {
     }
 
 	part, rest := parse(path)
-	if part == "" {
+	if len(part) == 0 {
 		return root, true
 	}
 
 	var child *Tree
 	var ok bool
 
-	child, ok = root.staticChildren[part]
+	child, ok = root.staticChildren[string(part)]
 
 	if ok {
 		return child.findNode(rest, params)
@@ -72,7 +72,7 @@ func (root *Tree) findNode(path string, params url.Values) (*Tree, bool) {
 		child, ok = child.findNode(rest, params)
 
 		if ok {
-			params.Add(key, part)
+			params.Add(key, string(part))
 			return child, true
 		}
 	}

@@ -22,11 +22,11 @@ var pathParseTests = map[string]pathParseResult{
 
 func TestParse(t *testing.T) {
 	for path, result := range pathParseTests {
-		var parsedPart string
+		var parsedPart []byte
         rest := path
 		for _, part := range result.parts {
             parsedPart, rest = parse(rest)
-			if part != parsedPart {
+			if part != string(parsedPart) {
 				t.Errorf("Parse error: want %q got %q", part, parsedPart)
 			}
 		}

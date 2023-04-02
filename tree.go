@@ -16,6 +16,9 @@ type Tree struct {
 // add a new path to the router, does nothing and returns false on duplicate path,method pair
 func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler) bool {
 	if len(pathParts) == 0 {
+		if t.handlers == nil {
+			t.handlers = map[string]http.Handler{}
+		}
 		_, ok := t.handlers[method]
 		if ok {
 			return false
@@ -27,9 +30,9 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 	var ok bool
 	var child *Tree
 
-	if pathParts[0].IsVariable {
+	if pathParts[0].IsVariable && t.dynamicChildren != nil {
 		child, ok = t.dynamicChildren[pathParts[0].Value]
-	} else {
+	} else if t.staticChildren != nil {
 		child, ok = t.staticChildren[pathParts[0].Value]
 	}
 
@@ -37,21 +40,29 @@ func (t *Tree) insert(pathParts []PathPart, method string, handler http.Handler)
 		return child.insert(pathParts[1:], method, handler)
 	}
 
-	child = &Tree{map[string]*Tree{}, map[string]*Tree{}, map[string]http.Handler{}}
+	child = &Tree{}
 	child.insert(pathParts[1:], method, handler)
 	if pathParts[0].IsVariable {
-		t.dynamicChildren[pathParts[0].Value] = child
+		if t.dynamicChildren == nil {
+			t.dynamicChildren = map[string]*Tree{pathParts[0].Value: child}
+		} else {
+			t.dynamicChildren[pathParts[0].Value] = child
+		}
 	} else {
-		t.staticChildren[pathParts[0].Value] = child
+		if t.staticChildren == nil {
+			t.staticChildren = map[string]*Tree{pathParts[0].Value: child}
+		} else {
+			t.staticChildren[pathParts[0].Value] = child
+		}
 	}
 
 	return true
 }
 
 func (root *Tree) findNode(path string, params url.Values) (*Tree, bool) {
-    if path == "" {
+	if path == "" {
 		return root, true
-    }
+	}
 
 	part, rest := parse(path)
 	if len(part) == 0 {

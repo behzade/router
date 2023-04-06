@@ -8,10 +8,10 @@ import (
 )
 
 type node struct {
+	staticChildren  map[string]*node
+	dynamicChildren map[string]*node
+	handlers        map[string]http.Handler
 	pathParts       []pathPart
-	staticChildren  map[string]*node        // map key is path part
-	dynamicChildren map[string]*node        // map key is path variable part
-	handlers        map[string]http.Handler // map key is http method
 }
 
 // add a new path to the router, does nothing and returns false on duplicate path,method pair

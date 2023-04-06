@@ -55,7 +55,7 @@ var methodNotAllowedTests = []pathMethod{
 }
 
 func TestTree(t *testing.T) {
-	tree := Tree{map[string]*Tree{}, map[string]*Tree{}, map[string]http.Handler{}}
+	tree := node{}
 	var ok bool
 	for _, testCase := range insertTests {
 		ok = tree.insert(

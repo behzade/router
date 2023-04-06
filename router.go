@@ -14,14 +14,14 @@ type Router struct {
 	NotFoundHandler         http.Handler
 	MethodNotAllowedHandler http.Handler
 
-	tree             *Tree
+	tree             *node
 	middlewares      []Middleware // global middlewares
 	middlewareScores []int
 }
 
 func New() *Router {
 	return &Router{
-		tree: &Tree{make(map[string]*Tree), make(map[string]*Tree), make(map[string]http.Handler)},
+		tree: &node{},
 	}
 }
 

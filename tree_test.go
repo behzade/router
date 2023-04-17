@@ -21,10 +21,10 @@ type treeTestCase struct {
 
 // TODO: better test cases
 var insertTests = []treeTestCase{
-	{fakeHandler, "", "", url.Values{}, http.MethodGet},
-	{fakeHandler, "/profile", "/profile", url.Values{}, http.MethodGet},
+	{fakeHandler, "", "", nil, http.MethodGet},
+	{fakeHandler, "/profile", "/profile", nil, http.MethodGet},
 	{fakeHandler, "/profile/{id}", "/profile/2", url.Values{"id": []string{"2"}}, http.MethodGet},
-	{fakeHandler, "/register", "/register", url.Values{}, http.MethodPost},
+	{fakeHandler, "/register", "/register", nil, http.MethodPost},
 	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPost},
 	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodGet},
 	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodDelete},

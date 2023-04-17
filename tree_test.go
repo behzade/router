@@ -1,21 +1,18 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
 	"testing"
 )
 
-type fakeHandler struct {
-	name string
-}
-
-func (f *fakeHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func fakeHandler(http.ResponseWriter, *http.Request, url.Values) {
 }
 
 type treeTestCase struct {
-	handler          http.Handler
+	handler          Handler
 	pathWithVariable string
 	pathInstance     string
 	pathParams       url.Values
@@ -24,15 +21,15 @@ type treeTestCase struct {
 
 // TODO: better test cases
 var insertTests = []treeTestCase{
-	{&fakeHandler{"index"}, "", "", url.Values{}, http.MethodGet},
-	{&fakeHandler{"profile"}, "/profile", "/profile", url.Values{}, http.MethodGet},
-	{&fakeHandler{"profile with id"}, "/profile/{id}", "/profile/2", url.Values{"id": []string{"2"}}, http.MethodGet},
-	{&fakeHandler{"register"}, "/register", "/register", url.Values{}, http.MethodPost},
-	{&fakeHandler{"user post post"}, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPost},
-	{&fakeHandler{"user post get"}, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodGet},
-	{&fakeHandler{"user post delete"}, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodDelete},
-	{&fakeHandler{"user post put"}, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPut},
-	{&fakeHandler{"user post patch"}, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPatch},
+	{fakeHandler, "", "", url.Values{}, http.MethodGet},
+	{fakeHandler, "/profile", "/profile", url.Values{}, http.MethodGet},
+	{fakeHandler, "/profile/{id}", "/profile/2", url.Values{"id": []string{"2"}}, http.MethodGet},
+	{fakeHandler, "/register", "/register", url.Values{}, http.MethodPost},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPost},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodGet},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodDelete},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPut},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", url.Values{"id": []string{"3"}}, http.MethodPatch},
 }
 
 type pathMethod struct {
@@ -64,12 +61,12 @@ func TestTree(t *testing.T) {
 			testCase.handler,
 		)
 		if !ok {
-			t.Errorf("Failed to insert route %q", testCase)
+			t.Errorf("Failed to insert route %v", testCase)
 		}
 	}
 	for _, testCase := range insertTests {
 		handler, pathParams, statusCode := tree.findHandler(testCase.pathInstance, testCase.method)
-		if !reflect.DeepEqual(testCase.handler, handler) {
+		if fmt.Sprint(testCase.handler) != fmt.Sprint(handler) {
 			t.Errorf("Tree find error: expected %v got %v", testCase.handler, handler)
 		}
 

@@ -10,15 +10,15 @@ import (
 type node struct {
 	staticChildren  map[string]*node
 	dynamicChildren map[string]*node
-	handlers        map[string]http.Handler
+	handlers        map[string]Handler
 	pathParts       []pathPart
 }
 
 // add a new path to the router, does nothing and returns false on duplicate path,method pair
-func (t *node) insert(pathParts []pathPart, method string, handler http.Handler) bool {
+func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool {
 	if len(pathParts) == 0 {
 		if t.handlers == nil {
-			t.handlers = map[string]http.Handler{}
+			t.handlers = map[string]Handler{}
 		}
 		_, ok := t.handlers[method]
 		if ok {
@@ -91,7 +91,7 @@ func (root *node) findNode(path string, params url.Values) (*node, bool) {
 	return nil, false
 }
 
-func (root *node) findHandler(path string, method string) (http.Handler, url.Values, int) {
+func (root *node) findHandler(path string, method string) (Handler, url.Values, int) {
 	params := url.Values{}
 
 	node, ok := root.findNode(path, params)
@@ -100,19 +100,21 @@ func (root *node) findHandler(path string, method string) (http.Handler, url.Val
 		return nil, nil, http.StatusNotFound
 	}
 	if method == http.MethodOptions {
-		return &OptionsHandler{keys(root.handlers), http.StatusOK}, nil, http.StatusOK
+        handler := OptionsHandler{keys(root.handlers), http.StatusOK}
+		return handler.ServeHTTP, nil, http.StatusOK
 	}
 
 	if len(node.handlers) == 0 {
 		return nil, params, http.StatusNotFound
 	}
 
-	var handler http.Handler
+	var handler Handler
 
 	handler, ok = node.handlers[method]
 
 	if !ok {
-		return &OptionsHandler{keys(root.handlers), http.StatusMethodNotAllowed}, params, http.StatusMethodNotAllowed
+        handler := &OptionsHandler{keys(root.handlers), http.StatusMethodNotAllowed}
+		return handler.ServeHTTP, params, http.StatusMethodNotAllowed
 	}
 	return handler, params, http.StatusOK
 }

@@ -6,13 +6,15 @@ import (
 	"sort"
 )
 
+type Handler func(w http.ResponseWriter, req *http.Request, pathParams url.Values)
+
 type Middleware interface {
-	Next(handler http.Handler) http.Handler
+	Next(handler Handler) Handler
 }
 
 type Router struct {
-	NotFoundHandler         http.Handler
-	MethodNotAllowedHandler http.Handler
+	NotFoundHandler         Handler
+	MethodNotAllowedHandler Handler
 
 	tree             *node
 	middlewares      []Middleware // global middlewares
@@ -26,7 +28,7 @@ func New() *Router {
 }
 
 // resolve the handler for path. returns the handler, pathParams and status code
-func (r *Router) resolve(path string, method string) (http.Handler, url.Values, int) {
+func (r *Router) resolve(path string, method string) (Handler, url.Values, int) {
 	handler, pathParams, statusCode := r.tree.findHandler(path, method)
 
 	switch statusCode {
@@ -54,30 +56,30 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		handler = middleware.Next(handler)
 	}
 
-	handler.ServeHTTP(w, req.WithContext(setPathParams(req.Context(), pathParams)))
+	handler(w, req, pathParams)
 }
 
-func (r *Router) AddRoute(method string, path string, handler http.Handler) {
+func (r *Router) AddRoute(method string, path string, handler Handler) {
 	r.tree.insert(parts(path), method, handler)
 }
 
-func (r *Router) GET(path string, handler http.Handler) {
+func (r *Router) GET(path string, handler Handler) {
 	r.AddRoute(http.MethodGet, path, handler)
 }
 
-func (r *Router) POST(path string, handler http.Handler) {
+func (r *Router) POST(path string, handler Handler) {
 	r.AddRoute(http.MethodPost, path, handler)
 }
 
-func (r *Router) PUT(path string, handler http.Handler) {
+func (r *Router) PUT(path string, handler Handler) {
 	r.AddRoute(http.MethodPut, path, handler)
 }
 
-func (r *Router) PATCH(path string, handler http.Handler) {
+func (r *Router) PATCH(path string, handler Handler) {
 	r.AddRoute(http.MethodPatch, path, handler)
 }
 
-func (r *Router) DELETE(path string, handler http.Handler) {
+func (r *Router) DELETE(path string, handler Handler) {
 	r.AddRoute(http.MethodDelete, path, handler)
 }
 

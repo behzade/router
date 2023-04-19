@@ -1,5 +1,5 @@
 # Simple Router
-A router compatible with the standard library http.Handler interface.
+A router simple router
 
 ## Features
 - Remove extra characters: invalid characters and extra/trailing slashes have no effect on the routing
@@ -27,16 +27,16 @@ func main() {
 
 	r.GET("/", &indexHandler{})
 	r.GET("/v1/product/{product-id}/comments",
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			productId := router.GetPathParams(r.Context()).Get("product-id")
+		func(w http.ResponseWriter, r *http.Request, params url.Values) {
+			productId := params.Get("product-id")
 
 			fmt.Fprintf(w, "Product %v comments", productId)
-		}))
+		})
 
 	r.POST("/v1/product/{product-id}/comments",
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		func(w http.ResponseWriter, r *http.Request, params url.Values) {
 			// Do stuff
-		}))
+		})
 
 	for {
 		http.ListenAndServe("127.0.0.1:8000", r)

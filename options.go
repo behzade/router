@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -10,11 +11,7 @@ type OptionsHandler struct {
 	statusCode int
 }
 
-func (o *OptionsHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Allow", o.allowedString())
+func (o OptionsHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request, _ url.Values) {
+	w.Header().Set("Allow", strings.Join(o.options, ", "))
 	w.WriteHeader(o.statusCode)
-}
-
-func (o *OptionsHandler) allowedString() string {
-	return strings.Join(o.options, ", ")
 }

@@ -3,6 +3,7 @@ package router
 import (
 	"bytes"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -11,21 +12,21 @@ func TestRouter(t *testing.T) {
 	var get, post, put, patch, delete bool
 
 	router := New()
-	router.GET("/GET", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	router.GET("/GET", func(http.ResponseWriter, *http.Request, url.Values) {
 		get = true
-	}))
-	router.POST("/POST", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	})
+	router.POST("/POST", func(http.ResponseWriter, *http.Request, url.Values) {
 		post = true
-	}))
-	router.PUT("/PUT", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	})
+	router.PUT("/PUT", func(http.ResponseWriter, *http.Request, url.Values) {
 		put = true
-	}))
-	router.PATCH("/PATCH", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	})
+	router.PATCH("/PATCH", func(http.ResponseWriter, *http.Request, url.Values) {
 		patch = true
-	}))
-	router.DELETE("/DELETE", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	})
+	router.DELETE("/DELETE", func(http.ResponseWriter, *http.Request, url.Values) {
 		delete = true
-	}))
+	})
 
 	w := testResponeWriter{bytes.Buffer{}, http.Header{}}
 

@@ -30,7 +30,7 @@ func TestOptionsHandler(t *testing.T) {
 	handler := OptionsHandler{[]string{http.MethodGet, http.MethodPost}, http.StatusOK}
 	w := testResponeWriter{bytes.Buffer{}, http.Header{}}
 	req := http.Request{Method: http.MethodOptions, URL: &url.URL{Path: "/"}}
-	handler.ServeHTTP(w, &req)
+	handler.ServeHTTP(w, &req, nil)
 	if w.header.Get("Allow") != "GET, POST" {
 		t.Errorf("Options Handler error: expected %q got %q", "GET, POST", w.header.Get("Allow"))
 	}

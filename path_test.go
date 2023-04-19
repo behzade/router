@@ -22,24 +22,24 @@ var pathParseTests = map[string]pathParseResult{
 
 func TestParse(t *testing.T) {
 	for path, result := range pathParseTests {
-		var parsedPart string
+		var parsedPart []byte
         rest := path
 		for _, part := range result.parts {
             parsedPart, rest = parse(rest)
-			if part != parsedPart {
+			if part != string(parsedPart) {
 				t.Errorf("Parse error: want %q got %q", part, parsedPart)
 			}
 		}
 	}
 }
 
-var pathPartsTests = map[string][]PathPart{
+var pathPartsTests = map[string][]pathPart{
 	"/":                                    {},
-	"/user":                                {PathPart{"user", false}},
-	"/user/profile":                        {PathPart{"user", false}, PathPart{"profile", false}},
-	"/user/{id}":                           {PathPart{"user", false}, PathPart{"id", true}},
-	"v1/user/{id}/profile/posts/{post-id}": {PathPart{"v1", false}, PathPart{"user", false}, PathPart{"id", true}, PathPart{"profile", false}, PathPart{"posts", false}, PathPart{"post-id", true}},
-	"{var1}/{var2}/{var3}/{var1}":          {PathPart{"var1", true}, PathPart{"var2", true}, PathPart{"var3", true}, PathPart{"var1", true}},
+	"/user":                                {pathPart{"user", false}},
+	"/user/profile":                        {pathPart{"user", false}, pathPart{"profile", false}},
+	"/user/{id}":                           {pathPart{"user", false}, pathPart{"id", true}},
+	"v1/user/{id}/profile/posts/{post-id}": {pathPart{"v1", false}, pathPart{"user", false}, pathPart{"id", true}, pathPart{"profile", false}, pathPart{"posts", false}, pathPart{"post-id", true}},
+	"{var1}/{var2}/{var3}/{var1}":          {pathPart{"var1", true}, pathPart{"var2", true}, pathPart{"var3", true}, pathPart{"var1", true}},
 }
 
 func TestParts(t *testing.T) {

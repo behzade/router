@@ -23,8 +23,6 @@ func writeAllowedByte(c byte, b *strings.Builder) {
 	}
 }
 
-var buf [256]byte
-
 // parse path to get usable parts for router and query params
 func parse(path string) ([]byte, string) {
 	var i int

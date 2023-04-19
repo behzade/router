@@ -3,7 +3,6 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -60,39 +59,60 @@ func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool
 	return true
 }
 
-func (root *node) findNode(path string) (*node, url.Values) {
+var buf [256]byte
+
+func (root *node) findNode(path string) (*node, Params) {
 	if path == "" {
 		return root, nil
 	}
 
-	part, rest := parse(path)
-	if len(part) == 0 {
+	var n int
+    var i int
+
+	for ; i < len(path); i++ {
+		c := path[i]
+		if c == '/' && n > 0 {
+            i++;
+            break
+		}
+
+		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
+			buf[n] = c
+			n++
+		} else if c >= 'A' && c <= 'Z' {
+			buf[n] = c + 32 // to lower
+			n++
+		}
+
+	}
+
+	if n == 0 {
 		return root, nil
 	}
 
-	if child, ok := root.staticChildren[string(part)]; ok {
-		return child.findNode(rest)
+    if child, ok := root.staticChildren[string(buf[:n])]; ok {
+        return child.findNode(path[i:])
 	}
 
     var child *node
-	var params url.Values
+	var params Params
 	var key string
 
 	for key, child = range root.dynamicChildren {
-		child, params = child.findNode(rest)
+        child, params = child.findNode(path[i:])
 
 		if child != nil {
 			if params == nil {
-				params = url.Values{}
+				params = Params{}
 			}
-			params.Add(key, string(part))
+            params[key] = append(params[key], buf[:n])
 			return child, params
 		}
 	}
 	return nil, nil
 }
 
-func (root *node) findHandler(path string, method string) (Handler, url.Values, int) {
+func (root *node) findHandler(path string, method string) (Handler, Params, int) {
 	node, params := root.findNode(path)
 
 	if node == nil {

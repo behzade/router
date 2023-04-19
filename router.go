@@ -2,11 +2,10 @@ package router
 
 import (
 	"net/http"
-	"net/url"
 	"sort"
 )
 
-type Handler func(w http.ResponseWriter, req *http.Request, pathParams url.Values)
+type Handler func(w http.ResponseWriter, req *http.Request, pathParams Params)
 
 type Middleware interface {
 	Next(handler Handler) Handler
@@ -28,7 +27,7 @@ func New() *Router {
 }
 
 // resolve the handler for path. returns the handler, pathParams and status code
-func (r *Router) resolve(path string, method string) (Handler, url.Values, int) {
+func (r *Router) resolve(path string, method string) (Handler, Params, int) {
 	handler, pathParams, statusCode := r.tree.findHandler(path, method)
 
 	switch statusCode {

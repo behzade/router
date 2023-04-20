@@ -107,9 +107,12 @@ func (root *node) findNode(path string) (*node, Params) {
 
 		if child != nil {
 			if params == nil {
-				params = Params{}
+				params = make(Params, 0, 20)
 			}
-			params[root.dynamicChild.name] = buf[:n]
+            length := len(params)
+            params = params[:length + 1]
+            params[length].key = root.dynamicChild.name
+            params[length].value = buf[:n]
 			return child, params
 		}
 	}

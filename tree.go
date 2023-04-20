@@ -6,11 +6,16 @@ import (
 	"strings"
 )
 
+type namedNode struct {
+	*node
+	name string
+}
+
 type node struct {
-	staticChildren  map[string]*node
-	dynamicChildren map[string]*node
-	handlers        map[string]Handler
-	pathParts       []pathPart
+	staticChildren map[string]*node
+	dynamicChild   *namedNode
+	handlers       map[string]Handler
+	pathParts      []pathPart
 }
 
 // add a new path to the router, does nothing and returns false on duplicate path,method pair
@@ -30,8 +35,12 @@ func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool
 	var ok bool
 	var child *node
 
-	if pathParts[0].IsVariable && t.dynamicChildren != nil {
-		child, ok = t.dynamicChildren[pathParts[0].Value]
+	if pathParts[0].IsVariable && t.dynamicChild != nil {
+		if pathParts[0].Value != t.dynamicChild.name {
+			return false
+		}
+		child = t.dynamicChild.node
+        ok = true;
 	} else if t.staticChildren != nil {
 		child, ok = t.staticChildren[pathParts[0].Value]
 	}
@@ -43,11 +52,7 @@ func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool
 	child = &node{}
 	child.insert(pathParts[1:], method, handler)
 	if pathParts[0].IsVariable {
-		if t.dynamicChildren == nil {
-			t.dynamicChildren = map[string]*node{pathParts[0].Value: child}
-		} else {
-			t.dynamicChildren[pathParts[0].Value] = child
-		}
+		t.dynamicChild = &namedNode{child, pathParts[0].Value}
 	} else {
 		if t.staticChildren == nil {
 			t.staticChildren = map[string]*node{pathParts[0].Value: child}
@@ -67,13 +72,13 @@ func (root *node) findNode(path string) (*node, Params) {
 	}
 
 	var n int
-    var i int
+	var i int
 
 	for ; i < len(path); i++ {
 		c := path[i]
 		if c == '/' && n > 0 {
-            i++;
-            break
+			i++
+			break
 		}
 
 		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
@@ -90,25 +95,25 @@ func (root *node) findNode(path string) (*node, Params) {
 		return root, nil
 	}
 
-    if child, ok := root.staticChildren[string(buf[:n])]; ok {
-        return child.findNode(path[i:])
+	if child, ok := root.staticChildren[string(buf[:n])]; ok {
+		return child.findNode(path[i:])
 	}
 
-    var child *node
+	var child *node
 	var params Params
-	var key string
 
-	for key, child = range root.dynamicChildren {
-        child, params = child.findNode(path[i:])
+	if root.dynamicChild != nil {
+		child, params = root.dynamicChild.findNode(path[i:])
 
 		if child != nil {
 			if params == nil {
 				params = Params{}
 			}
-            params[key] = buf[:n]
+			params[root.dynamicChild.name] = buf[:n]
 			return child, params
 		}
 	}
+
 	return nil, nil
 }
 
@@ -148,8 +153,8 @@ func (t *node) String() string {
 		builder.WriteString(fmt.Sprintf("%v/%v", route, child.String()))
 	}
 
-	for route, child := range t.dynamicChildren {
-		builder.WriteString(fmt.Sprintf("{%v}/%v", route, child.String()))
+	if t.dynamicChild != nil {
+		builder.WriteString(fmt.Sprintf("{%v}/%v", t.dynamicChild.name, t.dynamicChild.String()))
 	}
 	return builder.String()
 }

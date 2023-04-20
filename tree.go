@@ -105,7 +105,7 @@ func (root *node) findNode(path string) (*node, Params) {
 			if params == nil {
 				params = Params{}
 			}
-            params[key] = append(params[key], buf[:n])
+            params[key] = buf[:n]
 			return child, params
 		}
 	}

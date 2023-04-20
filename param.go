@@ -1,6 +1,4 @@
 package router
 
 
-type Params map[string][][]byte
-
-
+type Params map[string][]byte

@@ -22,13 +22,13 @@ type treeTestCase struct {
 var insertTests = []treeTestCase{
 	{fakeHandler, "", "", nil, http.MethodGet},
 	{fakeHandler, "/profile", "/profile", nil, http.MethodGet},
-	{fakeHandler, "/profile/{id}", "/profile/2", Params{"id": [][]byte{[]byte("2")}}, http.MethodGet},
+	{fakeHandler, "/profile/{id}", "/profile/2", Params{"id": []byte("2")}, http.MethodGet},
 	{fakeHandler, "/register", "/register", nil, http.MethodPost},
-	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": [][]byte{[]byte("3")}}, http.MethodPost},
-	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": [][]byte{[]byte("3")}}, http.MethodGet},
-	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": [][]byte{[]byte("3")}}, http.MethodDelete},
-	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": [][]byte{[]byte("3")}}, http.MethodPut},
-	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": [][]byte{[]byte("3")}}, http.MethodPatch},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": []byte("3")}, http.MethodPost},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": []byte("3")}, http.MethodGet},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": []byte("3")}, http.MethodDelete},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": []byte("3")}, http.MethodPut},
+	{fakeHandler, "/user/profile/posts/{id}", "/user/profile/posts/3", Params{"id": []byte("3")}, http.MethodPatch},
 }
 
 type pathMethod struct {

@@ -16,3 +16,11 @@ func keys[T comparable, R any](m map[T]R) []T {
 	}
 	return keys
 }
+
+func max(a uint8, b uint8) uint8 {
+    if a >= b {
+        return a
+    }
+
+    return b
+}

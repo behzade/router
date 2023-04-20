@@ -23,35 +23,12 @@ func writeAllowedByte(c byte, b *strings.Builder) {
 	}
 }
 
-var buf [256]byte
-
-// parse path to get usable parts for router and query params
-func parse(path string) ([]byte, string) {
-	var i int
-	var n int
-
-	for ; i < len(path); i++ {
-		c := path[i]
-		if c == '/' && n > 0 {
-			return buf[:n], path[i+1:]
-		}
-
-		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
-			buf[n] = c
-			n++
-		} else if c >= 'A' && c <= 'Z' {
-			buf[n] = c + 32 // to lower
-			n++
-		}
-
-	}
-	return buf[:n], path[i:]
-}
-
 type pathPart struct {
 	Value      string
 	IsVariable bool
 }
+
+type pathParts []pathPart
 
 // split path to variable and constant parts
 func parts(path string) []pathPart {
@@ -86,4 +63,14 @@ func parts(path string) []pathPart {
 	}
 
 	return parts
+}
+
+func (p pathParts) dynamicCount() int {
+	var i int
+	for _, part := range p {
+		if part.IsVariable {
+			i++
+		}
+	}
+	return i
 }

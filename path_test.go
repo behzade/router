@@ -20,19 +20,6 @@ var pathParseTests = map[string]pathParseResult{
 	"/product/123/details": {[]string{"product", "123", "details"}},
 }
 
-func TestParse(t *testing.T) {
-	for path, result := range pathParseTests {
-		var parsedPart []byte
-        rest := path
-		for _, part := range result.parts {
-            parsedPart, rest = parse(rest)
-			if part != string(parsedPart) {
-				t.Errorf("Parse error: want %q got %q", part, parsedPart)
-			}
-		}
-	}
-}
-
 var pathPartsTests = map[string][]pathPart{
 	"/":                                    {},
 	"/user":                                {pathPart{"user", false}},

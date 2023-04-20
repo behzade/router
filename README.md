@@ -10,6 +10,8 @@ A router simple router
 
 ## Limitations
 - Only supports lowercase a-z and 0-9 and "-" as allowed characters in path.
+- Each Path section must be shorter than 256 bytes
+- Supports up to 20 path paramters
 
 ## Example Usage
 ```go
@@ -25,16 +27,16 @@ import (
 func main() {
 	r := router.New()
 
-	r.GET("/", &indexHandler{})
+	r.GET("/", ServeHTTP)
 	r.GET("/v1/product/{product-id}/comments",
-		func(w http.ResponseWriter, r *http.Request, params url.Values) {
+		func(w http.ResponseWriter, r *http.Request, params router.Params) {
 			productId := params.Get("product-id")
 
 			fmt.Fprintf(w, "Product %v comments", productId)
 		})
 
 	r.POST("/v1/product/{product-id}/comments",
-		func(w http.ResponseWriter, r *http.Request, params url.Values) {
+		func(w http.ResponseWriter, r *http.Request, params router.Params) {
 			// Do stuff
 		})
 
@@ -47,7 +49,7 @@ func main() {
 type indexHandler struct {
 }
 
-func (t *indexHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func ServeHTTP(w http.ResponseWriter, _ *http.Request, _ router.Params) {
 	w.Write([]byte("hello world!"))
 }
 ```

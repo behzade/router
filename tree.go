@@ -64,7 +64,7 @@ func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool
 	return true
 }
 
-var buf [64]byte
+var buf [256]byte
 
 func (root *node) findNode(path string) (*node, Params) {
 	if path == "" {

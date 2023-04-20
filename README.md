@@ -46,9 +46,6 @@ func main() {
 
 }
 
-type indexHandler struct {
-}
-
 func ServeHTTP(w http.ResponseWriter, _ *http.Request, _ router.Params) {
 	w.Write([]byte("hello world!"))
 }

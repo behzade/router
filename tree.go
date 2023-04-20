@@ -68,6 +68,8 @@ func (t *node) insert(pathParts pathParts, method string, handler Handler) bool 
 }
 
 var buf [256]byte
+var params [20]Param
+var paramIndex uint8
 
 func (root *node) findNode(path string) (*node, Params) {
 	if path == "" {
@@ -76,8 +78,8 @@ func (root *node) findNode(path string) (*node, Params) {
 
 	currentNode := root
 	var tmp *node
-	var params Params = nil
 	var ok bool
+    paramIndex = 0
 
 	for path != "" {
 		var n int
@@ -111,7 +113,8 @@ func (root *node) findNode(path string) (*node, Params) {
 
 		if currentNode.dynamicChild != nil {
 			path = path[i:]
-			params = append(params, Param{currentNode.dynamicChild.name, buf[:n]})
+            params[paramIndex] = Param{currentNode.dynamicChild.name, buf[:n]}
+            paramIndex++
 			currentNode = currentNode.dynamicChild.node
 			continue
 		}
@@ -119,7 +122,7 @@ func (root *node) findNode(path string) (*node, Params) {
 		return nil, nil
 	}
 
-	return currentNode, params
+    return currentNode, params[:paramIndex]
 }
 
 func (root *node) findHandler(path string, method string) (Handler, Params, int) {

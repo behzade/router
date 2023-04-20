@@ -28,6 +28,8 @@ type pathPart struct {
 	IsVariable bool
 }
 
+type pathParts []pathPart
+
 // split path to variable and constant parts
 func parts(path string) []pathPart {
 	parts := []pathPart{}
@@ -61,4 +63,14 @@ func parts(path string) []pathPart {
 	}
 
 	return parts
+}
+
+func (p pathParts) dynamicCount() int {
+	var i int
+	for _, part := range p {
+		if part.IsVariable {
+			i++
+		}
+	}
+	return i
 }

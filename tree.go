@@ -11,6 +11,8 @@ type namedNode struct {
 	name string
 }
 
+var maxDynamicCount uint8 = 0
+
 type node struct {
 	staticChildren map[string]*node
 	dynamicChild   *namedNode
@@ -19,7 +21,7 @@ type node struct {
 }
 
 // add a new path to the router, does nothing and returns false on duplicate path,method pair
-func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool {
+func (t *node) insert(pathParts pathParts, method string, handler Handler) bool {
 	if len(pathParts) == 0 {
 		if t.handlers == nil {
 			t.handlers = map[string]Handler{}
@@ -61,6 +63,7 @@ func (t *node) insert(pathParts []pathPart, method string, handler Handler) bool
 		}
 	}
 
+    maxDynamicCount = max(uint8(pathParts.dynamicCount()), maxDynamicCount)
 	return true
 }
 
@@ -107,7 +110,7 @@ func (root *node) findNode(path string) (*node, Params) {
 
 		if child != nil {
 			if params == nil {
-				params = make(Params, 0, 20)
+				params = make(Params, 0, maxDynamicCount)
 			}
             length := len(params)
             params = params[:length + 1]

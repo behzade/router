@@ -1,5 +1,5 @@
-# Simple Router
-A router simple router
+# Router
+A simple http router aimed to have no heap allocation on requests (to avoid gc) and good performance.
 
 ## Features
 - Remove extra characters: invalid characters and extra/trailing slashes have no effect on the routing

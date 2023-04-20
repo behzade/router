@@ -42,7 +42,7 @@ func (t *node) insert(pathParts pathParts, method string, handler Handler) bool 
 			return false
 		}
 		child = t.dynamicChild.node
-        ok = true;
+		ok = true
 	} else if t.staticChildren != nil {
 		child, ok = t.staticChildren[pathParts[0].Value]
 	}
@@ -63,7 +63,7 @@ func (t *node) insert(pathParts pathParts, method string, handler Handler) bool 
 		}
 	}
 
-    maxDynamicCount = max(uint8(pathParts.dynamicCount()), maxDynamicCount)
+	maxDynamicCount = max(uint8(pathParts.dynamicCount()), maxDynamicCount)
 	return true
 }
 
@@ -74,53 +74,52 @@ func (root *node) findNode(path string) (*node, Params) {
 		return root, nil
 	}
 
-	var n int
-	var i int
+	currentNode := root
+	var tmp *node
+	var params Params = nil
+	var ok bool
 
-	for ; i < len(path); i++ {
-		c := path[i]
-		if c == '/' && n > 0 {
-			i++
+	for path != "" {
+		var n int
+		var i int
+
+		for ; i < len(path); i++ {
+			c := path[i]
+			if c == '/' && n > 0 {
+				i++
+				break
+			}
+
+			if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
+				buf[n] = c
+				n++
+			} else if c >= 'A' && c <= 'Z' {
+				buf[n] = c + 32 // to lower
+				n++
+			}
+		}
+
+		if n == 0 {
 			break
 		}
 
-		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' {
-			buf[n] = c
-			n++
-		} else if c >= 'A' && c <= 'Z' {
-			buf[n] = c + 32 // to lower
-			n++
+		if tmp, ok = currentNode.staticChildren[string(buf[:n])]; ok {
+			path = path[i:]
+			currentNode = tmp
+			continue
 		}
 
-	}
-
-	if n == 0 {
-		return root, nil
-	}
-
-	if child, ok := root.staticChildren[string(buf[:n])]; ok {
-		return child.findNode(path[i:])
-	}
-
-	var child *node
-	var params Params
-
-	if root.dynamicChild != nil {
-		child, params = root.dynamicChild.findNode(path[i:])
-
-		if child != nil {
-			if params == nil {
-				params = make(Params, 0, maxDynamicCount)
-			}
-            length := len(params)
-            params = params[:length + 1]
-            params[length].key = root.dynamicChild.name
-            params[length].value = buf[:n]
-			return child, params
+		if currentNode.dynamicChild != nil {
+			path = path[i:]
+			params = append(params, Param{currentNode.dynamicChild.name, buf[:n]})
+			currentNode = currentNode.dynamicChild.node
+			continue
 		}
+
+		return nil, nil
 	}
 
-	return nil, nil
+	return currentNode, params
 }
 
 func (root *node) findHandler(path string, method string) (Handler, Params, int) {

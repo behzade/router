@@ -66,15 +66,15 @@ func TestTree(t *testing.T) {
 	for _, testCase := range insertTests {
 		handler, pathParams, statusCode := tree.findHandler(testCase.pathInstance, testCase.method)
 		if fmt.Sprint(testCase.handler) != fmt.Sprint(handler) {
-			t.Errorf("Tree find error %v: expected %v got %v",testCase.pathInstance, testCase.handler, handler)
+			t.Errorf("Tree find error %v: expected %v got %v", testCase.pathInstance, testCase.handler, handler)
 		}
 
 		if !reflect.DeepEqual(testCase.pathParams, pathParams) {
-			t.Errorf("Tree find error %v: expected %v got %v",testCase.pathInstance, testCase.pathParams, pathParams)
+			t.Errorf("Tree find error %v: expected %v got %v", testCase.pathInstance, testCase.pathParams, pathParams)
 		}
 
 		if !reflect.DeepEqual(http.StatusOK, statusCode) {
-			t.Errorf("Tree find error %v: expected %v got %v",testCase.pathInstance, http.StatusOK, statusCode)
+			t.Errorf("Tree find error %v: expected %v got %v", testCase.pathInstance, http.StatusOK, statusCode)
 		}
 	}
 
